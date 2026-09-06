@@ -52,7 +52,19 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none;background:#06091
   #mute{width:52px;font-size:22px}
   #stats{bottom:calc(max(14px,env(safe-area-inset-bottom)) + 66px);font-size:11px}
   #hint{bottom:calc(max(14px,env(safe-area-inset-bottom)) + 90px);font-size:15px}
-  #toast{bottom:calc(max(14px,env(safe-area-inset-bottom)) + 156px)}
+  #toast{bottom:auto!important;top:calc(max(14px,env(safe-area-inset-top)) + 178px)!important;transform:translateX(-50%) translateY(-12px);font-size:14px;padding:8px 14px}
+  #toast.on{transform:translateX(-50%) translateY(0)}
+  .pop{font-size:clamp(26px,8vw,44px)}
+  .pop.perfect{font-size:clamp(30px,10vw,58px)}
+  .pop.great{font-size:clamp(26px,8.5vw,46px)}
+  .pop.good{font-size:clamp(22px,7vw,36px)}
+  .pop.miss{font-size:clamp(24px,8vw,42px)}
+  .pop.over{font-size:clamp(28px,9.5vw,56px)}
+  .pop.milestone{font-size:clamp(28px,9vw,50px)}
+  .pop.back{font-size:clamp(34px,11vw,100px)}
+  .pop.back.small{font-size:clamp(28px,9vw,72px)}
+  .pop.pts{font-size:clamp(18px,5.5vw,26px)}
+  .pop.bonus,.pop.brim{font-size:clamp(15px,4.5vw,22px)}
 }
 #shopBtn:hover,#mute:hover{transform:translateY(-2px) scale(1.04)}
 #shopBtn:active,#mute:active{transform:scale(.96)}
@@ -90,10 +102,10 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none;background:#06091
 #resetBtn:hover{color:#fff;border-color:rgba(255,255,255,.4)}
 #resetBtn.armed{color:#ff9c9c;border-color:#ff5c5c;background:rgba(255,92,92,.12)}
 .pop.brim{color:#8be9ff;font-size:24px}
-#toast{position:absolute;left:50%;bottom:calc(max(14px,env(safe-area-inset-bottom)) + 84px);transform:translateX(-50%) translateY(20px);opacity:0;background:rgba(0,0,0,.35);padding:10px 18px;border-radius:14px;font-size:15px;font-weight:600;transition:all .35s cubic-bezier(.2,1.4,.4,1);white-space:nowrap;backdrop-filter:blur(8px)}
+#toast{position:absolute;left:50%;bottom:calc(max(14px,env(safe-area-inset-bottom)) + 84px);transform:translateX(-50%) translateY(20px);opacity:0;background:rgba(0,0,0,.45);padding:10px 18px;border-radius:14px;font-size:15px;font-weight:600;transition:all .35s cubic-bezier(.2,1.4,.4,1);white-space:normal;text-align:center;max-width:min(92vw,520px);width:max-content;line-height:1.3;backdrop-filter:blur(8px)}
 #toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 #pops{position:absolute;inset:0;overflow:hidden}
-.pop{position:absolute;transform:translate(-50%,-50%) scale(0);font-weight:700;font-size:44px;line-height:1;letter-spacing:-.02em;white-space:nowrap;filter:drop-shadow(0 0 2px rgba(0,0,0,.7)) drop-shadow(0 6px 24px rgba(0,0,0,.55));animation:popIn .7s cubic-bezier(.17,1.8,.4,1) forwards,popOut .45s ease-in .9s forwards;will-change:transform,opacity}
+.pop{position:absolute;transform:translate(-50%,-50%) scale(0);font-weight:700;font-size:44px;line-height:1.02;letter-spacing:-.02em;white-space:normal;text-align:center;max-width:92vw;width:max-content;filter:drop-shadow(0 0 2px rgba(0,0,0,.7)) drop-shadow(0 6px 24px rgba(0,0,0,.55));animation:popIn .7s cubic-bezier(.17,1.8,.4,1) forwards,popOut .45s ease-in .9s forwards;will-change:transform,opacity}
 @keyframes popIn{0%{transform:translate(-50%,-50%) scale(0) rotate(var(--r));opacity:0}100%{transform:translate(-50%,-50%) scale(1) rotate(var(--r));opacity:1}}
 @keyframes popOut{100%{transform:translate(-50%,-150%) scale(.85) rotate(var(--r));opacity:0}}
 .pop.perfect{font-size:58px;background:linear-gradient(90deg,#fff,#ffe36e,#ff8bd6,#8be9ff,#fff);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:popIn .7s cubic-bezier(.17,1.8,.4,1) forwards,popOut .45s ease-in 1s forwards,shimmer 1.2s linear infinite}
@@ -185,7 +197,7 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none;background:#06091
 <audio id="unlock" loop playsinline preload="auto" src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA="></audio>
 <script>
 'use strict';
-const VERSION='1.2.1';
+const VERSION='1.2.2';
 const $=s=>document.querySelector(s);
 const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const IS_IOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
@@ -410,12 +422,12 @@ let g=null; const parts=[],bubbles=[],timers=[];
 const N=48,surf={y:new Float32Array(N),v:new Float32Array(N)};
 const schedule=(d,fn)=>timers.push({t:S.time+d,fn});
 
-function resize(){ const dpr=Math.min(devicePixelRatio||1,2); W=innerWidth; H=innerHeight; canvas.width=W*dpr; canvas.height=H*dpr; canvas.style.width=W+'px'; canvas.style.height=H+'px'; ctx.setTransform(dpr,0,0,dpr,0,0); S.cupScale=clamp(Math.min(W*0.5,H*0.4)/330,0.55,1); layoutGlass(); }
+function resize(){ const dpr=Math.min(devicePixelRatio||1,2); W=innerWidth; H=innerHeight; canvas.width=W*dpr; canvas.height=H*dpr; canvas.style.width=W+'px'; canvas.style.height=H+'px'; ctx.setTransform(dpr,0,0,dpr,0,0); S.cupScale=clamp((W<=640?Math.min(W*0.64,H*0.42):Math.min(W*0.5,H*0.4))/330,0.55,1); layoutGlass(); }
 addEventListener('resize',resize);
 
 const glassSkin=()=>SKINS.glass.find(s=>s.id===S.eq.glass)||SKINS.glass[0];
 const cupSkin=()=>SKINS.cup.find(s=>s.id===S.eq.cup)||SKINS.cup[0];
-function layoutGlass(){ if(!g) return; const sk=glassSkin(),base=Math.min(W*0.5,H*0.4); let h=base*g.hs*(sk.hs||1); const topMin=(W<=640?215:160)+100*S.cupScale+20,bottomMax=H*0.84; h=Math.max(80,Math.min(h,bottomMax-topMin)); g.h=h; g.tw=Math.min(base*0.62*g.ws*(sk.ws||1),W*0.8); g.bw=g.tw*sk.bw; g.cx=W/2; g.bottomY=Math.min(H*0.5+h/2+24,bottomMax); }
+function layoutGlass(){ if(!g) return; const sk=glassSkin(),base=W<=640?Math.min(W*0.64,H*0.42):Math.min(W*0.5,H*0.4); let h=base*g.hs*(sk.hs||1); const topMin=(W<=640?215:160)+100*S.cupScale+20,bottomMax=H*0.84; h=Math.max(80,Math.min(h,bottomMax-topMin)); g.h=h; g.tw=Math.min(base*0.62*g.ws*(sk.ws||1),W*0.8); g.bw=g.tw*sk.bw; g.cx=W/2; g.bottomY=Math.min(H*0.5+h/2+24,bottomMax); }
 // drunk line drifts only while the glass is idle or being poured; it freezes the instant you let go.
 const targetNow=()=>S.target>=1?1:clamp(S.target+(S.mod==='drunk'?Math.sin(S.driftT*1.6)*0.07:0),0.05,1);
 // brim targets (rim) get a wider window and clearance above the rim before it counts as a spill.
@@ -443,7 +455,9 @@ document.addEventListener('touchend',()=>SFX.resume(),{passive:true});
 // ---------- ui ----------
 let toastT=null;
 function toast(msg){ elToast.textContent=msg; elToast.classList.add('on'); clearTimeout(toastT); toastT=setTimeout(()=>elToast.classList.remove('on'),2600); }
-function popup(text,kind,dy=0){ const el=document.createElement('div'); el.className='pop '+kind; el.textContent=text; const x=g?gx():W/2, y=(g?g.bottomY-g.h*0.55:H/2)+dy; el.style.left=x+'px'; el.style.top=y+'px'; el.style.setProperty('--r',rand(-7,7).toFixed(1)+'deg'); if(kind==='perfect'||kind==='milestone') el.style.fontSize=(kind==='perfect'?58:50)*(1+Math.min(S.combo,12)*0.025)+'px'; elPops.appendChild(el); setTimeout(()=>el.remove(),2000); }
+function popup(text,kind,dy=0){ const el=document.createElement('div'); el.className='pop '+kind; el.textContent=text; const x=g?gx():W/2; let y=(g?g.bottomY-g.h*0.55:H/2)+dy;
+  // secondary popups (dy>0) stack under the main one's real height so wrapped text never overlaps
+  if(dy>0&&S.lastPopY!=null) y=Math.max(y,S.lastPopY+S.lastPopH/2+18+(dy-54)); el.style.left=x+'px'; el.style.top=y+'px'; el.style.setProperty('--r',rand(-7,7).toFixed(1)+'deg'); if(kind==='perfect'||kind==='milestone') el.style.fontSize=Math.min((kind==='perfect'?58:50)*(1+Math.min(S.combo,12)*0.025),W*0.11)+'px'; elPops.appendChild(el); if(dy<=0){ S.lastPopY=y; S.lastPopH=el.offsetHeight; } setTimeout(()=>el.remove(),2000); }
 function bump(el){ el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); setTimeout(()=>el.classList.remove('bump'),160); }
 function updateHUD(){ elCombo.textContent='x'+S.combo; $('#lvl').textContent='lv '+totalLvl(); elShopBtn.classList.toggle('can',canAffordAnyUpg()); elPrest.textContent=S.prestige>0?`★ prestige ${S.prestige}`:''; elPrest.hidden=S.prestige===0; $('#combo').classList.toggle('halo',S.halo); elCombo.classList.toggle('hot',S.combo>=3&&S.combo<10); elCombo.classList.toggle('insane',S.combo>=10); elStats.textContent=`${S.glasses} poured · ${S.perfects} perfect · best combo x${S.bestCombo} · v${VERSION}`; if(S.glasses>=3) elHint.style.opacity=0; }
 function showMod(){ if(S.mod){ const m=MODS.find(m=>m.id===S.mod); elMod.innerHTML=`<b>${m.label}</b>${m.desc}<span class="bonus">bonus x${m.bonus} aura</span>`; elMod.classList.add('on'); SFX.mod(); } else elMod.classList.remove('on'); }

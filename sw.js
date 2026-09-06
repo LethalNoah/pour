@@ -1,7 +1,7 @@
 // pour. service worker
 // Bump VERSION on every release. The old cache is deleted on activate and the
 // open page gets a "new version" message so it can offer a reload.
-const VERSION = '1.2.1';
+const VERSION = '1.2.2';
 const CACHE = 'pour-' + VERSION;
 const SHELL = [
   './',
