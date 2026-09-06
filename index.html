@@ -199,7 +199,7 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none;background:#06091
 <audio id="unlock" loop playsinline preload="auto" src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA="></audio>
 <script>
 'use strict';
-const VERSION='1.2.4';
+const VERSION='1.2.5';
 const $=s=>document.querySelector(s);
 const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const IS_IOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
@@ -445,8 +445,8 @@ function surfSpan(){ const hw=halfW(levelY())+16; const c=gx(); return [c-hw,c+h
 function surfIndex(x){ const [x0,x1]=surfSpan(); return clamp(Math.round((x-x0)/(x1-x0)*(N-1)),1,N-2); }
 function surfAt(x){ const [x0,x1]=surfSpan(); const f=clamp((x-x0)/(x1-x0),0,1)*(N-1); const i=Math.floor(f),t=f-i; return lerp(surf.y[i],surf.y[Math.min(N-1,i+1)],t); }
 function pourRate(){ let r=0.30+Math.min(S.combo,25)*0.013; if(S.mod==='speed') r*=1.9; if(S.mod==='slowmo') r*=0.55; if(S.mod==='shot') r*=1.35; if(S.mod==='gulp') r*=0.85; return r; }
-// water still in the air after release. capped so fast pours never dump more than ~3.5% of the glass after you let go.
-const travelTime=()=>Math.min(0.11,0.035/pourRate());
+// water still in the air after release keeps landing for this long. this is the feel of the game; leave it.
+const travelTime=()=>0.11;
 
 // ---------- save ----------
 const SAVE_V=2; // bumping this wipes aura + items on next load (economy rebalance) but keeps prestige, best combo and stats
@@ -480,7 +480,7 @@ function newGlass(first){
   surf.y.fill(0); surf.v.fill(0); bubbles.length=0;
   showMod();
 }
-function onDown(){ if(S.shopOpen) return; if(S.screen==='title'){ startGame(); return; } SFX.resume(); if(S.phase==='idle'){ S.phase='pouring'; S.streamActive=true; S.pourT=0; SFX.click(); } }
+function onDown(){ if(S.shopOpen) return; if(S.screen==='title'){ startGame(); return; } SFX.resume(); if(S.phase==='idle'){ S.phase='pouring'; S.streamActive=true; S.pourT=0; S.pourStart=performance.now(); SFX.click(); } }
 function onUp(){ if(S.phase==='pouring'){ S.phase='releasing'; S.streamTopY=cupLip().y; SFX.setPour(false); } }
 function doOverflow(){ S.fill=spillAt(); S.phase='settling'; S.streamTopY=cupLip().y; SFX.setPour(false); S.shake=12; spill(); schedule(0.22,()=>judge('over')); }
 function flash(){ if(REDUCED) return; elFlash.classList.remove('on'); void elFlash.offsetWidth; elFlash.classList.add('on'); }
@@ -560,7 +560,7 @@ function toggleMute(){ SFX.setMuted(!SFX.muted); elMute.textContent=SFX.muted?'�
 document.addEventListener('pointerdown',e=>{ if(e.target.closest&&e.target.closest('#mute,#shopBtn,#shop,#toast,#installBtn')) return; e.preventDefault(); onDown(); });
 // safety net: if the mouse button is already up while we're still pouring (missed pointerup during a hitch), release
 document.addEventListener('pointermove',e=>{ if(S.phase==='pouring'&&e.pointerType==='mouse'&&e.buttons===0&&!S.keyHeld) onUp(); },{passive:true});
-elToast.addEventListener('pointerdown',e=>e.stopPropagation()); elToast.addEventListener('pointerup',e=>e.stopPropagation());
+elToast.addEventListener('pointerdown',e=>e.stopPropagation());
 // ---------- shop ----------
 const elShop=$('#shop'),elShopBody=$('#shopBody'),elShopAura=$('#shopAura'),elShopBtn=$('#shopBtn'),elFlash=$('#flash');
 function renderUpgrades(){
@@ -640,8 +640,10 @@ let wipeArmed=null; const elWipe=$('#wipeBtn');
 elWipe.addEventListener('click',()=>{ if(wipeArmed){ clearTimeout(wipeArmed); wipeArmed=null; elWipe.textContent='🧪 dev: wipe everything'; elWipe.classList.remove('armed'); wipeEverything(); return; } elWipe.textContent='tap again: wipes prestige, stats, EVERYTHING'; elWipe.classList.add('armed'); wipeArmed=setTimeout(()=>{ wipeArmed=null; elWipe.textContent='🧪 dev: wipe everything'; elWipe.classList.remove('armed'); },3500); });
 let resetArmed=null; const elReset=$('#resetBtn');
 elReset.addEventListener('click',()=>{ if(resetArmed){ clearTimeout(resetArmed); resetArmed=null; elReset.textContent='reset aura & items'; elReset.classList.remove('armed'); resetProgress(); return; } elReset.textContent='tap again to wipe aura, items + upgrades (prestige stays)'; elReset.classList.add('armed'); resetArmed=setTimeout(()=>{ resetArmed=null; elReset.textContent='reset aura & items'; elReset.classList.remove('armed'); },3500); });
-document.addEventListener('pointerup',onUp); document.addEventListener('pointercancel',onUp);
+// release is caught every way the browser can report it: capture-phase pointer/mouse/touch ups, cancels, focus loss, hidden tab.
+for(const ev of ['pointerup','pointercancel','mouseup','touchend','touchcancel','lostpointercapture']) addEventListener(ev,onUp,{capture:true,passive:true});
 addEventListener('blur',onUp); document.addEventListener('visibilitychange',()=>{ if(document.hidden) onUp(); });
+document.addEventListener('contextmenu',()=>{ if(!S.keyHeld) onUp(); });
 addEventListener('keydown',e=>{ if(e.repeat) return; if(e.key==='Escape'){ closeShop(); return; } if(S.shopOpen) return; if(e.code==='Space'||e.code==='Enter'||e.code==='ArrowUp'){ e.preventDefault(); S.keyHeld=true; onDown(); } if(e.key==='m'||e.key==='M') toggleMute(); });
 addEventListener('keyup',e=>{ if(e.code==='Space'||e.code==='Enter'||e.code==='ArrowUp'){ S.keyHeld=false; onUp(); } });
 elMute.addEventListener('click',e=>{ e.stopPropagation(); toggleMute(); });
@@ -810,13 +812,16 @@ function draw(){
 }
 
 // ---------- loop ----------
-let last=performance.now();
+let last=performance.now(),last0=last;
 let slowSince=0;
 function frame(now){
   const rdt=Math.min((now-last)/1000,0.05); last=now; let dt=rdt;
   // auto quality: if frames stay above ~30ms for 2s, drop the expensive effects (blur, aurora, extra sparks)
   if(S.screen==='play'&&S.quality==='auto'&&!document.hidden){ S.frameEma+=(rdt-S.frameEma)*0.05; if(S.frameEma>0.03){ if(!slowSince) slowSince=now; else if(now-slowSince>2000&&!S.lowQ){ S.lowQ=true; toast('smoother mode on ⚙️ (graphics: low). change it in the shop'); } } else slowSince=0; }
   if(S.hitstop>0){ S.hitstop-=rdt; dt*=0.06; }
+  // if the page stalled for a long beat mid-pour (frame gap > 250ms), the release may have been lost: don't keep pouring blind
+  if(S.phase==='pouring'&&(now-last0)>400&&!S.keyHeld){ onUp(); }
+  last0=now;
   S.time+=dt; update(dt); draw(); requestAnimationFrame(frame);
 }
 resize(); requestAnimationFrame(frame);
