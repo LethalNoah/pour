@@ -46,14 +46,16 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none;background:#06091
   #auraNum,#comboNum{font-size:34px}
   .lbl{font-size:11px}
   #vibe{top:calc(max(14px,env(safe-area-inset-top)) + 74px);font-size:15px;padding:8px 18px}
-  #mod{top:calc(max(14px,env(safe-area-inset-top)) + 122px)}
+  #mod{top:calc(max(14px,env(safe-area-inset-top)) + 122px);background:rgba(0,0,0,.28);border:1.5px solid rgba(255,209,102,.35);border-radius:999px;padding:6px 14px;font-size:12px;backdrop-filter:blur(10px);display:flex;gap:8px;align-items:center}
+  #mod b{display:inline;font-size:14px}
+  #mod .mdesc{display:none}
+  #mod .bonus{display:inline;margin:0;font-size:12px}
   #shopBtn,#mute{bottom:max(14px,env(safe-area-inset-bottom));height:52px}
   #shopBtn{font-size:16px;padding:0 18px}
   #mute{width:52px;font-size:22px}
   #stats{bottom:calc(max(14px,env(safe-area-inset-bottom)) + 66px);font-size:11px}
   #hint{bottom:calc(max(14px,env(safe-area-inset-bottom)) + 90px);font-size:15px}
-  #toast{bottom:auto!important;top:calc(max(14px,env(safe-area-inset-top)) + 178px)!important;transform:translateX(-50%) translateY(-12px);font-size:14px;padding:8px 14px}
-  #toast.on{transform:translateX(-50%) translateY(0)}
+  #toast{bottom:calc(max(14px,env(safe-area-inset-bottom)) + 146px)!important;font-size:14px;padding:8px 14px}
   .pop{font-size:clamp(26px,8vw,44px)}
   .pop.perfect{font-size:clamp(30px,10vw,58px)}
   .pop.great{font-size:clamp(26px,8.5vw,46px)}
@@ -197,7 +199,7 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none;background:#06091
 <audio id="unlock" loop playsinline preload="auto" src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA="></audio>
 <script>
 'use strict';
-const VERSION='1.2.2';
+const VERSION='1.2.3';
 const $=s=>document.querySelector(s);
 const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const IS_IOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
@@ -427,7 +429,7 @@ addEventListener('resize',resize);
 
 const glassSkin=()=>SKINS.glass.find(s=>s.id===S.eq.glass)||SKINS.glass[0];
 const cupSkin=()=>SKINS.cup.find(s=>s.id===S.eq.cup)||SKINS.cup[0];
-function layoutGlass(){ if(!g) return; const sk=glassSkin(),base=W<=640?Math.min(W*0.64,H*0.42):Math.min(W*0.5,H*0.4); let h=base*g.hs*(sk.hs||1); const topMin=(W<=640?215:160)+100*S.cupScale+20,bottomMax=H*0.84; h=Math.max(80,Math.min(h,bottomMax-topMin)); g.h=h; g.tw=Math.min(base*0.62*g.ws*(sk.ws||1),W*0.8); g.bw=g.tw*sk.bw; g.cx=W/2; g.bottomY=Math.min(H*0.5+h/2+24,bottomMax); }
+function layoutGlass(){ if(!g) return; const sk=glassSkin(),base=W<=640?Math.min(W*0.64,H*0.42):Math.min(W*0.5,H*0.4); let h=base*g.hs*(sk.hs||1); const topMin=(W<=640?262:160)+100*S.cupScale+20,bottomMax=H*0.84; h=Math.max(80,Math.min(h,bottomMax-topMin)); g.h=h; g.tw=Math.min(base*0.62*g.ws*(sk.ws||1),W*0.8); g.bw=g.tw*sk.bw; g.cx=W/2; g.bottomY=Math.min(H*0.5+h/2+24,bottomMax); }
 // drunk line drifts only while the glass is idle or being poured; it freezes the instant you let go.
 const targetNow=()=>S.target>=1?1:clamp(S.target+(S.mod==='drunk'?Math.sin(S.driftT*1.6)*0.07:0),0.05,1);
 // brim targets (rim) get a wider window and clearance above the rim before it counts as a spill.
@@ -460,7 +462,7 @@ function popup(text,kind,dy=0){ const el=document.createElement('div'); el.class
   if(dy>0&&S.lastPopY!=null) y=Math.max(y,S.lastPopY+S.lastPopH/2+18+(dy-54)); el.style.left=x+'px'; el.style.top=y+'px'; el.style.setProperty('--r',rand(-7,7).toFixed(1)+'deg'); if(kind==='perfect'||kind==='milestone') el.style.fontSize=Math.min((kind==='perfect'?58:50)*(1+Math.min(S.combo,12)*0.025),W*0.11)+'px'; elPops.appendChild(el); if(dy<=0){ S.lastPopY=y; S.lastPopH=el.offsetHeight; } setTimeout(()=>el.remove(),2000); }
 function bump(el){ el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); setTimeout(()=>el.classList.remove('bump'),160); }
 function updateHUD(){ elCombo.textContent='x'+S.combo; $('#lvl').textContent='lv '+totalLvl(); elShopBtn.classList.toggle('can',canAffordAnyUpg()); elPrest.textContent=S.prestige>0?`★ prestige ${S.prestige}`:''; elPrest.hidden=S.prestige===0; $('#combo').classList.toggle('halo',S.halo); elCombo.classList.toggle('hot',S.combo>=3&&S.combo<10); elCombo.classList.toggle('insane',S.combo>=10); elStats.textContent=`${S.glasses} poured · ${S.perfects} perfect · best combo x${S.bestCombo} · v${VERSION}`; if(S.glasses>=3) elHint.style.opacity=0; }
-function showMod(){ if(S.mod){ const m=MODS.find(m=>m.id===S.mod); elMod.innerHTML=`<b>${m.label}</b>${m.desc}<span class="bonus">bonus x${m.bonus} aura</span>`; elMod.classList.add('on'); SFX.mod(); } else elMod.classList.remove('on'); }
+function showMod(){ if(S.mod){ const m=MODS.find(m=>m.id===S.mod); elMod.innerHTML=`<b>${m.label}</b><span class="mdesc">${m.desc}</span><span class="bonus">bonus x${modBonusOf(m).toFixed(2).replace(/\.?0+$/,'')} aura</span>`; elMod.classList.add('on'); SFX.mod(); if(W<=640) toast(`${m.label} · ${m.desc}`); } else elMod.classList.remove('on'); }
 
 // ---------- flow ----------
 function startGame(){ SFX.init(); SFX.resume(); $('#unlock').play().catch(()=>{}); elTitle.classList.add('off'); S.screen='play'; load(); S.cupY=H*0.25; newGlass(true); updateHUD(); SFX.click(); if(S.halo) setTier(TIERS.length-1); }
