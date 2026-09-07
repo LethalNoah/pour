@@ -154,7 +154,12 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none;background:#06091
 @media (prefers-reduced-motion:reduce){.pop,#flash.on,#shopBtn,#combo.halo{animation-duration:.01s!important}}
 #qualityBtn{display:inline-block;margin:10px 6px 0;background:none;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.45);font-family:inherit;font-size:11px;letter-spacing:.06em;padding:6px 12px;border-radius:999px;cursor:pointer;transition:all .2s}
 #qualityBtn:hover{color:#fff;border-color:rgba(255,255,255,.4)}
-#resetBtn,#wipeBtn{display:inline-block;margin:10px 6px 0}
+#resetBtn,#wipeBtn,#dbgBtn{display:inline-block;margin:10px 6px 0}
+#dbgBtn{background:none;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.45);font-family:inherit;font-size:11px;letter-spacing:.06em;padding:6px 12px;border-radius:999px;cursor:pointer}
+#dbg{margin-top:10px;font:11px/1.5 ui-monospace,Consolas,monospace;white-space:pre-wrap;word-break:break-word;background:rgba(0,0,0,.35);border-radius:10px;padding:10px;color:#b8ffcf;user-select:text;-webkit-user-select:text}
+#dbg[hidden]{display:none}
+body.lowq .panelbox,body.lowq #vibe,body.lowq #mute,body.lowq #shopBtn,body.lowq #toast,body.lowq #mod{backdrop-filter:none}
+body.lowq #shopBtn,body.lowq #shopBtn.can{animation:none}
 #wipeBtn{background:none;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.45);font-family:inherit;font-size:11px;letter-spacing:.06em;padding:6px 12px;border-radius:999px;cursor:pointer;transition:all .2s}
 #wipeBtn:hover{color:#fff;border-color:rgba(255,255,255,.4)}
 #wipeBtn.armed{color:#ff9c9c;border-color:#ff5c5c;background:rgba(255,92,92,.12)}
@@ -182,7 +187,8 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none;background:#06091
     <div class="tabs"><button class="tab on" data-tab="upgrades">⬆️ upgrades</button><button class="tab" data-tab="style">✨ style</button></div>
     <div id="shopBody"></div>
     <p class="fine">every item boosts the aura you earn. water effects stack. spending never touches your combo. no refunds. no cap.</p>
-    <div class="foot"><button id="installBtn2" hidden>📲 install as an app</button><button id="qualityBtn">graphics: auto</button><button id="resetBtn">reset aura &amp; items</button><button id="wipeBtn">🧪 dev: wipe everything</button></div>
+    <div class="foot"><button id="installBtn2" hidden>📲 install as an app</button><button id="qualityBtn">graphics: auto</button><button id="resetBtn">reset aura &amp; items</button><button id="wipeBtn">🧪 dev: wipe everything</button><button id="dbgBtn">🐛 debug</button></div>
+    <pre id="dbg" hidden></pre>
   </div>
 </div>
 <div id="title">
@@ -199,7 +205,7 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none;background:#06091
 <audio id="unlock" loop playsinline preload="auto" src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA="></audio>
 <script>
 'use strict';
-const VERSION='1.2.5';
+const VERSION='1.2.6';
 const $=s=>document.querySelector(s);
 const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const IS_IOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
@@ -394,7 +400,11 @@ const SFX={
   descend(){ this.tone(180,1.1,{to:48,vol:0.14}); this.tone(90,0.9,{to:40,type:'triangle',vol:0.08,delay:0.05}); },
   arp(t,i){ const a=TIER_AUDIO[t]; this.tone(a.root*4*ARP_SCALE[i],a.arp*2.4,{vol:0.045,attack:0.02}); },
   resume(){ if(this.ctx&&this.ctx.state!=='running') this.ctx.resume().catch(()=>{}); const u=$('#unlock'); if(u&&u.paused) u.play().catch(()=>{}); },
-  setPour(on,fill=0,rate=0.3){ if(!this.ctx) return; const t=this.ctx.currentTime; this.pourGain.gain.setTargetAtTime(on?0.16*Math.min(1.5,0.6+rate):0,t,on?0.04:0.07); if(on) this.pourBP.frequency.setTargetAtTime(260+fill*fill*1500,t,0.05); },
+  setPour(on,fill=0,rate=0.3){ if(!this.ctx) return; const t=this.ctx.currentTime;
+    // throttled: automation events pile up on the param timeline forever, so never schedule more than ~20/s
+    const nowMs=performance.now(); if(on&&nowMs-(this._pourAt||0)<50) return; this._pourAt=on?nowMs:0;
+    const g=this.pourGain.gain,f=this.pourBP.frequency; g.cancelScheduledValues(t); f.cancelScheduledValues(t);
+    g.setTargetAtTime(on?0.16*Math.min(1.5,0.6+rate):0,t,on?0.04:0.07); if(on) f.setTargetAtTime(260+fill*fill*1500,t,0.05); },
   tone(f,dur,o={}){ if(!this.ctx) return; const {type='sine',vol=0.22,delay=0,to=null,attack=0.006}=o; const c=this.ctx,t=c.currentTime+delay; const osc=c.createOscillator(),g=c.createGain(); osc.type=type; osc.frequency.setValueAtTime(f,t); if(to) osc.frequency.exponentialRampToValueAtTime(to,t+dur); g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(vol,t+attack); g.gain.exponentialRampToValueAtTime(0.0001,t+dur); osc.connect(g); g.connect(this.master); osc.start(t); osc.stop(t+dur+0.05); },
   click(){ this.tone(900,0.05,{vol:0.06,type:'triangle'}); },
   perfect(){ [2,4,6].forEach((n,i)=>{ this.tone(PENT[n],0.55,{delay:i*0.07,vol:0.2}); this.tone(PENT[n]*2,0.35,{delay:i*0.07,vol:0.05,type:'triangle'}); }); },
@@ -424,7 +434,7 @@ let g=null; const parts=[],bubbles=[],timers=[];
 const N=48,surf={y:new Float32Array(N),v:new Float32Array(N)};
 const schedule=(d,fn)=>timers.push({t:S.time+d,fn});
 
-function resize(){ const dpr=Math.min(devicePixelRatio||1,2); W=innerWidth; H=innerHeight; canvas.width=W*dpr; canvas.height=H*dpr; canvas.style.width=W+'px'; canvas.style.height=H+'px'; ctx.setTransform(dpr,0,0,dpr,0,0); S.cupScale=clamp((W<=640?Math.min(W*0.64,H*0.42):Math.min(W*0.5,H*0.4))/330,0.55,1); layoutGlass(); }
+function resize(){ W=innerWidth; H=innerHeight; const dpr=Math.min(devicePixelRatio||1,W*H>1200000?1.5:2); canvas.width=W*dpr; canvas.height=H*dpr; canvas.style.width=W+'px'; canvas.style.height=H+'px'; ctx.setTransform(dpr,0,0,dpr,0,0); S.cupScale=clamp((W<=640?Math.min(W*0.64,H*0.42):Math.min(W*0.5,H*0.4))/330,0.55,1); layoutGlass(); }
 addEventListener('resize',resize);
 
 const glassSkin=()=>SKINS.glass.find(s=>s.id===S.eq.glass)||SKINS.glass[0];
@@ -559,7 +569,7 @@ function toggleMute(){ SFX.setMuted(!SFX.muted); elMute.textContent=SFX.muted?'�
 // ---------- input ----------
 document.addEventListener('pointerdown',e=>{ if(e.target.closest&&e.target.closest('#mute,#shopBtn,#shop,#toast,#installBtn')) return; e.preventDefault(); onDown(); });
 // safety net: if the mouse button is already up while we're still pouring (missed pointerup during a hitch), release
-document.addEventListener('pointermove',e=>{ if(S.phase==='pouring'&&e.pointerType==='mouse'&&e.buttons===0&&!S.keyHeld) onUp(); },{passive:true});
+document.addEventListener('pointermove',e=>{ if(S.phase==='pouring'&&e.pointerType==='mouse'&&e.buttons===0&&!S.keyHeld){ DBG.lostReleases++; onUp(); } },{passive:true});
 elToast.addEventListener('pointerdown',e=>e.stopPropagation());
 // ---------- shop ----------
 const elShop=$('#shop'),elShopBody=$('#shopBody'),elShopAura=$('#shopAura'),elShopBtn=$('#shopBtn'),elFlash=$('#flash');
@@ -608,7 +618,8 @@ elShop.addEventListener('click',e=>{ if(e.target===elShop) closeShop(); });
 elShopBody.addEventListener('click',e=>{ const ub=e.target.closest('.ubuy'); if(ub){ buyUpg(ub.dataset.id); return; } const b=e.target.closest('.card'); if(b) buyOrEquip(b.dataset.cat,b.dataset.id); });
 document.querySelectorAll('#shop .tab').forEach(b=>b.addEventListener('click',()=>{ S.shopTab=b.dataset.tab; renderShop(); SFX.click(); }));
 const elQuality=$('#qualityBtn');
-function setQuality(q){ S.quality=q; S.lowQ=q==='low'; slowSince=0; S.frameEma=0.016; elQuality.textContent='graphics: '+q+(q==='auto'&&S.lowQ?' (low)':''); save(); }
+function setQuality(q){ S.quality=q; S.lowQ=q==='low'; slowSince=0; S.frameEma=0.016; elQuality.textContent='graphics: '+q+(q==='auto'&&S.lowQ?' (low)':''); document.body.classList.toggle('lowq',S.lowQ); save(); }
+const elDbg=$('#dbg'); $('#dbgBtn').addEventListener('click',()=>{ elDbg.hidden=!elDbg.hidden; elDbg.textContent=debugText(); });
 elQuality.addEventListener('click',()=>{ const order=['auto','high','low']; setQuality(order[(order.indexOf(S.quality)+1)%3]); SFX.click(); });
 if(IS_IOS&&!STANDALONE) $('#iosHint').classList.add('on');
 const IS_ANDROID=/Android/i.test(navigator.userAgent);
@@ -814,15 +825,22 @@ function draw(){
 // ---------- loop ----------
 let last=performance.now(),last0=last;
 let slowSince=0;
+// ---------- freeze watchdog (debug readout in the shop footer) ----------
+const DBG={longTasks:[],maxGap:0,maxGapPhase:'',maxUpd:0,maxDraw:0,updEma:0,drawEma:0,stallReleases:0,lostReleases:0};
+try{ new PerformanceObserver(list=>{ for(const e of list.getEntries()){ DBG.longTasks.push(`${Math.round(e.duration)}ms @${Math.round(e.startTime/1000)}s phase=${S.phase} parts=${parts.length} tier=${S.tier} lowQ=${S.lowQ}`); if(DBG.longTasks.length>6) DBG.longTasks.shift(); } }).observe({type:'longtask',buffered:true}); }catch(e){}
+function debugText(){ return `v${VERSION} · ${W}x${H} @${(canvas.width/W).toFixed(2)}x · quality ${S.quality}${S.lowQ?' (low)':''}\nframe gap max ${Math.round(DBG.maxGap)}ms (${DBG.maxGapPhase}) · update ${DBG.updEma.toFixed(1)}ms max ${DBG.maxUpd.toFixed(0)} · draw ${DBG.drawEma.toFixed(1)}ms max ${DBG.maxDraw.toFixed(0)}\nparts ${parts.length} · bubbles ${bubbles.length} · pops ${elPops.childElementCount} · stall-releases ${DBG.stallReleases} · lost-releases ${DBG.lostReleases}\nlong tasks: ${DBG.longTasks.length?DBG.longTasks.join(' | '):'none'}`; }
 function frame(now){
-  const rdt=Math.min((now-last)/1000,0.05); last=now; let dt=rdt;
+  const gap=now-last; if(gap>DBG.maxGap&&S.screen==='play'){ DBG.maxGap=gap; DBG.maxGapPhase=S.phase; }
+  const rdt=Math.min(gap/1000,0.05); last=now; let dt=rdt;
   // auto quality: if frames stay above ~30ms for 2s, drop the expensive effects (blur, aurora, extra sparks)
-  if(S.screen==='play'&&S.quality==='auto'&&!document.hidden){ S.frameEma+=(rdt-S.frameEma)*0.05; if(S.frameEma>0.03){ if(!slowSince) slowSince=now; else if(now-slowSince>2000&&!S.lowQ){ S.lowQ=true; toast('smoother mode on ⚙️ (graphics: low). change it in the shop'); } } else slowSince=0; }
+  if(S.screen==='play'&&S.quality==='auto'&&!document.hidden){ S.frameEma+=(rdt-S.frameEma)*0.05; if(S.frameEma>0.03){ if(!slowSince) slowSince=now; else if(now-slowSince>2000&&!S.lowQ){ S.lowQ=true; document.body.classList.add('lowq'); toast('smoother mode on ⚙️ (graphics: low). change it in the shop'); } } else slowSince=0; }
   if(S.hitstop>0){ S.hitstop-=rdt; dt*=0.06; }
   // if the page stalled for a long beat mid-pour (frame gap > 250ms), the release may have been lost: don't keep pouring blind
-  if(S.phase==='pouring'&&(now-last0)>400&&!S.keyHeld){ onUp(); }
+  if(S.phase==='pouring'&&(now-last0)>400&&!S.keyHeld){ DBG.stallReleases++; onUp(); }
   last0=now;
-  S.time+=dt; update(dt); draw(); requestAnimationFrame(frame);
+  S.time+=dt; const t1=performance.now(); update(dt); const t2=performance.now(); draw(); const t3=performance.now();
+  const u=t2-t1,d=t3-t2; DBG.updEma+=(u-DBG.updEma)*0.05; DBG.drawEma+=(d-DBG.drawEma)*0.05; if(u>DBG.maxUpd) DBG.maxUpd=u; if(d>DBG.maxDraw) DBG.maxDraw=d;
+  requestAnimationFrame(frame);
 }
 resize(); requestAnimationFrame(frame);
 </script>
