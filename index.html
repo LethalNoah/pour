@@ -207,7 +207,7 @@ body.lowq #shopBtn.can::before{animation:none}
 <audio id="unlock" loop playsinline preload="auto" src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA="></audio>
 <script>
 'use strict';
-const VERSION='1.4.2';
+const VERSION='1.4.3';
 const $=s=>document.querySelector(s);
 const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const IS_IOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
@@ -468,7 +468,12 @@ addEventListener('resize',resize);
 
 const glassSkin=()=>SKINS.glass.find(s=>s.id===S.eq.glass)||SKINS.glass[0];
 const cupSkin=()=>SKINS.cup.find(s=>s.id===S.eq.cup)||SKINS.cup[0];
-function layoutGlass(){ if(!g) return; const sk=glassSkin(),base=W<=640?Math.min(W*0.64,H*0.42):Math.min(W*0.5,H*0.4); let h=base*g.hs*(sk.hs||1); const topMin=(W<=640?300:150)+100*S.cupScale+20,bottomMax=W<=640?H-205:Math.min(H*0.84,H-150); h=Math.max(80,Math.min(h,bottomMax-topMin)); g.h=h; g.tw=Math.min(base*0.62*g.ws*(sk.ws||1),W*0.8); g.bw=g.tw*sk.bw; g.cx=W/2; g.bottomY=Math.min(H*0.5+h/2+24,bottomMax); }
+function layoutGlass(){ if(!g) return; const sk=glassSkin(),base=W<=640?Math.min(W*0.64,H*0.42):Math.min(W*0.5,H*0.4);
+  let h=base*g.hs*(sk.hs||1), tw=Math.min(base*0.62*g.ws*(sk.ws||1),W*0.8);
+  const topMin=(W<=640?250:150)+100*S.cupScale+20, bottomMax=W<=640?H-165:Math.min(H*0.84,H-150), maxH=bottomMax-topMin;
+  // never squash: if the glass must shrink to fit, shrink width with it. normal glasses shrink at most 15% and may overlap the pill row instead.
+  if(h>maxH){ const s=Math.max(S.mod==='gulp'?0.4:0.85,maxH/h); h*=s; tw*=s; }
+  h=Math.max(80,h); g.h=h; g.tw=tw; g.bw=g.tw*sk.bw; g.cx=W/2; g.bottomY=Math.min(H*0.5+h/2+24,bottomMax); }
 // drunk line drifts only while the glass is idle or being poured; it freezes the instant you let go.
 const targetNow=()=>S.target>=1?1:clamp(S.target+(S.mod==='drunk'?Math.sin(S.driftT*1.6)*0.07:0),0.05,1);
 // brim targets (rim) get a wider window and clearance above the rim before it counts as a spill.
