@@ -222,7 +222,7 @@ body.lowq #shopBtn.can::before{animation:none}
 <audio id="unlock" loop playsinline preload="auto"></audio>
 <script>
 'use strict';
-const VERSION='1.6.2';
+const VERSION='1.6.3';
 const $=s=>document.querySelector(s);
 const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const IS_IOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
@@ -503,6 +503,10 @@ const SFX={
     g.setTargetAtTime(on?0.16*Math.min(1.5,0.6+rate):0,t,on?0.04:0.07); if(on) f.setTargetAtTime(260+fill*fill*1500,t,0.05); },
   tone(f,dur,o={}){ if(!this.ctx) return; const {type='sine',vol=0.22,delay=0,to=null,attack=0.006}=o; const c=this.ctx,t=c.currentTime+delay; const osc=c.createOscillator(),g=c.createGain(); osc.type=type; osc.frequency.setValueAtTime(f,t); if(to) osc.frequency.exponentialRampToValueAtTime(to,t+dur); g.gain.setValueAtTime(0.0001,t); g.gain.linearRampToValueAtTime(vol,t+attack); g.gain.exponentialRampToValueAtTime(0.0001,t+dur); osc.connect(g); g.connect(this.master); osc.start(t); osc.stop(t+dur+0.05); },
   click(){ this.tone(900,0.05,{vol:0.06,type:'triangle'}); },
+  // percussive tick ladder: press / half-second / release / perfect. pitched to the current tier's root: 1, 3rd, 5th, octave.
+  tick(step){ if(!this.ctx) return; const root=(TIER_AUDIO[S.tier]||TIER_AUDIO[0]).root*4, f=root*[1,1.25,1.5,2][step], c=this.ctx, t=c.currentTime;
+    this.tone(f,0.09+step*0.01,{type:'triangle',vol:0.13+step*0.03,attack:0.002}); this.tone(f*2,0.05,{type:'sine',vol:0.04,attack:0.001});
+    const src=c.createBufferSource(); src.buffer=this.noiseBuf; const bp=c.createBiquadFilter(); bp.type='bandpass'; bp.frequency.value=Math.min(8000,f*3); bp.Q.value=3; const g=c.createGain(); g.gain.setValueAtTime(0.14,t); g.gain.exponentialRampToValueAtTime(0.0001,t+0.03); src.connect(bp); bp.connect(g); g.connect(this.master); src.start(t); src.stop(t+0.04); },
   perfect(){ [2,4,6].forEach((n,i)=>{ this.tone(PENT[n],0.55,{delay:i*0.07,vol:0.2}); this.tone(PENT[n]*2,0.35,{delay:i*0.07,vol:0.05,type:'triangle'}); }); },
   great(){ [1,3].forEach((n,i)=>this.tone(PENT[n],0.4,{delay:i*0.08,vol:0.18})); },
   good(){ this.tone(PENT[0],0.3,{vol:0.14}); },
@@ -603,8 +607,8 @@ function newGlass(first){
   showMod();
 }
 const buzz=p=>{ try{ if(navigator.vibrate) navigator.vibrate(p); }catch(e){} };
-function onDown(){ if(S.shopOpen) return; if(S.screen==='title'){ startGame(); return; } SFX.resume(); if(S.phase==='slot'&&S.slot&&!S.slot.done){ S.slot.hold=true; SFX.setPour(true,1-S.fill,0.5); buzz(30); return; } if(S.phase==='idle'){ S.phase='pouring'; S.streamActive=true; S.pourT=0; S.pourStart=performance.now(); SFX.click(); buzz(30); } }
-function onUp(){ if(S.phase==='slot'&&S.slot){ S.slot.hold=false; SFX.setPour(false); return; } if(S.phase==='pouring'){ S.phase='releasing'; S.streamTopY=cupLip().y; SFX.setPour(false); buzz(40); } }
+function onDown(){ if(S.shopOpen) return; if(S.screen==='title'){ startGame(); return; } SFX.resume(); if(S.phase==='slot'&&S.slot&&!S.slot.done){ S.slot.hold=true; SFX.setPour(true,1-S.fill,0.5); buzz(30); return; } if(S.phase==='idle'){ S.phase='pouring'; S.streamActive=true; S.pourT=0; S.tickedMid=false; S.pourStart=performance.now(); SFX.tick(0); buzz(30); } }
+function onUp(){ if(S.phase==='slot'&&S.slot){ S.slot.hold=false; SFX.setPour(false); return; } if(S.phase==='pouring'){ S.phase='releasing'; S.streamTopY=cupLip().y; SFX.setPour(false); SFX.tick(2); buzz(40); } }
 function doOverflow(){ S.fill=spillAt(); S.phase='settling'; S.streamTopY=cupLip().y; SFX.setPour(false); S.shake=12; spill(); schedule(0.22,()=>judge('over')); }
 function flash(){ if(REDUCED) return; elFlash.classList.remove('on'); void elFlash.offsetWidth; elFlash.classList.add('on'); }
 function judge(forced){
@@ -619,7 +623,7 @@ function judge(forced){
   const comeback=tier==='perfect'&&S.justFailed;
   S.glasses++;
   switch(tier){
-    case 'perfect': S.combo=opener?Math.max(openerCombo(),comeback?comebackRestore(S.lostCombo||0):0):S.combo+1; S.perfects++; S.hitstop=0.13; S.shake=4; confetti(50); SFX.perfect(); buzz([50,40,70]); break;
+    case 'perfect': S.combo=opener?Math.max(openerCombo(),comeback?comebackRestore(S.lostCombo||0):0):S.combo+1; S.perfects++; S.hitstop=0.13; S.shake=4; confetti(50); SFX.tick(3); SFX.perfect(); buzz([50,40,70]); break;
     case 'great': S.combo=opener?openerGreat():S.combo+1; confetti(16); SFX.great(); break;
     case 'good': if(opener) S.combo=1; SFX.good(); break;
     case 'miss': if(shielded){ shieldBurst(); SFX.great(); } else { S.lostCombo=S.combo; S.combo=0; SFX.miss(); } S.shake=3; break;
@@ -861,7 +865,7 @@ function update(dt){
   S.cupY+=((g.bottomY-g.h-(100*S.cupScale+14))-S.cupY)*Math.min(1,dt*6);
   if(S.phase==='pouring'||S.phase==='releasing'){
     const r=pourRate();
-    if(S.phase==='pouring'){ S.pourT+=dt; SFX.setPour(true,S.fill,r); }
+    if(S.phase==='pouring'){ S.pourT+=dt; SFX.setPour(true,S.fill,r); if(!S.tickedMid&&S.pourT>=0.5){ S.tickedMid=true; SFX.tick(1); } }
     if(S.streamActive){
       S.fill+=r*dt;
       const ly=levelY(),ix=impactX();
