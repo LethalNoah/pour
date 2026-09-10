@@ -205,7 +205,7 @@ body.lowq #shopBtn.can::before{animation:none}
 <audio id="unlock" loop playsinline preload="auto" src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA="></audio>
 <script>
 'use strict';
-const VERSION='1.2.8';
+const VERSION='1.3.0';
 const $=s=>document.querySelector(s);
 const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const IS_IOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
@@ -289,6 +289,27 @@ const SKINS={
   {id:'gold',name:'golden chalice',emoji:'👑',price:20000000,mult:0.20,stroke:'#ffd166',fill:'rgba(255,209,102,0.25)',glow:'#ffd166'},
   {id:'diamond',name:'diamond',emoji:'💎',price:75000000,mult:0.30,stroke:'#b8f6ff',fill:'rgba(184,246,255,0.28)',glow:'#7ae8ff',sparkle:true},
  ],
+ flavor:[
+  {id:'none',name:'plain water',emoji:'💧',price:0,mult:0},
+  {id:'lemon',name:'lemonade',emoji:'🍋',price:40000,mult:0.01,tint:'#ffe36e'},
+  {id:'cherry',name:'cherry',emoji:'🍒',price:60000,mult:0.01,tint:'#ff4d6d'},
+  {id:'grape',name:'grape',emoji:'🍇',price:80000,mult:0.02,tint:'#9b5de5'},
+  {id:'mint',name:'mint',emoji:'🌿',price:100000,mult:0.02,tint:'#7fffd4'},
+  {id:'cola',name:'cola',emoji:'🥤',price:150000,mult:0.03,tint:'#5a2a12'},
+  {id:'milk',name:'oat milk',emoji:'🥛',price:250000,mult:0.03,tint:'#f5f0e6'},
+  {id:'void',name:'void juice',emoji:'🕳️',price:400000,mult:0.04,tint:'#0a0a14'},
+ ],
+ charm:[
+  {id:'none',name:'no charm',emoji:'✖️',price:0,mult:0},
+  {id:'duck',name:'rubber duck',emoji:'🦆',price:60000,mult:0.02,char:'🦆'},
+  {id:'lemon',name:'lemon slice',emoji:'🍋',price:80000,mult:0.02,char:'🍋'},
+  {id:'cherry',name:'cherries',emoji:'🍒',price:100000,mult:0.02,char:'🍒'},
+  {id:'ice',name:'ice cubes',emoji:'🧊',price:120000,mult:0.03,ice:true},
+  {id:'umbrella',name:'lil umbrella',emoji:'🏖️',price:150000,mult:0.03,char:'🏖️'},
+  {id:'pearls',name:'boba pearls',emoji:'🧋',price:200000,mult:0.03,pearls:true},
+  {id:'ghost',name:'ghost',emoji:'👻',price:300000,mult:0.04,char:'👻',hover:true},
+  {id:'dice',name:'lucky dice',emoji:'🎲',price:400000,mult:0.05,char:'🎲'},
+ ],
  confetti:[
   {id:'rect',name:'classic confetti',emoji:'🎊',price:0,mult:0},
   {id:'emoji',name:'emoji confetti',emoji:'😭',price:2500000,mult:0.05,chars:['😭','🔥','💀','✨','🗣️','💯']},
@@ -297,8 +318,9 @@ const SKINS={
  ],
 };
 const fmtShort=n=>n>=1e9?(n/1e9).toFixed(n%1e9?2:0).replace(/\.?0+$/,'')+'B':n>=1e6?(n/1e6).toFixed(n%1e6?1:0).replace(/\.0$/,'')+'M':n>=1e4?Math.round(n/1e3)+'k':fmt(n);
-const CAT_NAMES={glass:'glass',water:'water effects · these stack',cup:'pourer',confetti:'confetti'};
-const itemMult=()=>{ let m=1; for(const cat of ['glass','cup','confetti']){ const it=SKINS[cat].find(x=>x.id===S.eq[cat]); if(it) m+=it.mult; } for(const id of S.fx){ const it=SKINS.water.find(x=>x.id===id); if(it) m+=it.mult; } return m; };
+const CAT_NAMES={flavor:'flavor · tints the water',charm:'charm · floats in the glass',glass:'glass',water:'water effects · these stack',cup:'pourer',confetti:'confetti'};
+const CATS=['flavor','charm','glass','water','cup','confetti'];
+const itemMult=()=>{ let m=1; for(const cat of ['glass','cup','confetti','flavor','charm']){ const it=SKINS[cat].find(x=>x.id===S.eq[cat]); if(it) m+=it.mult; } for(const id of S.fx){ const it=SKINS.water.find(x=>x.id===id); if(it) m+=it.mult; } return m; };
 const hasFx=id=>S.fx.includes(id);
 // ---------- incremental upgrades ----------
 // nine pathways. costs grow exponentially, bonuses compound multiplicatively. all aura still comes from pouring.
@@ -353,6 +375,9 @@ const MODS=[
  {id:'tiny',label:'tiny target 🎯',desc:'half the window. all of the pressure.',bonus:2},
  {id:'drunk',label:'drunk 🍻',desc:'the line is drifting. so are you.',bonus:2},
  {id:'nocap',label:'no cap 🧢',desc:'fill it to the brim. do NOT spill.',bonus:1.75},
+ {id:'leaky',label:'leaky 💧',desc:"the glass is leaking. overshoot a little.",bonus:2},
+ {id:'gusty',label:'gusty 🌬️',desc:'the stream is blowing around. same water though.',bonus:1.25},
+ {id:'jackpot',label:'jackpot 🎰',desc:'x3 aura. a miss costs 5% of your aura.',bonus:3},
 ];
 const PHR={
  perfect:['NO CAP. PERFECT.','SLAY 💅','ATE THAT 🍽️',"IT'S GIVING HYDRATION",'MAIN CHARACTER','W 🏆','CERTIFIED ✅','AURA MAXXING ✨','LOCKED IN 🔒','cinema. 🎬','so real','hydration check ✅','6️⃣7️⃣','ICONIC','PEAK 🏔️','built different','crazy work','absolute cinema','GOATED 🐐','stop it. 😭','no notes.','SHEEEESH 🥶','ok pop off','unc could never','rizz +100','mother. 👑','serve. 💅','periodt.',"that's the tweet",'certified banger 🔊',"nah that's crazy",'zero gravity 🚀','in his era','the blueprint 📐','aura +∞','chat is this real','skill issue (for everyone else)','he\'s him.','SO REAL FOR THAT','lowkey the goat 🐐'],
@@ -428,7 +453,7 @@ const SFX={
 
 // ---------- state ----------
 let W=0,H=0;
-const S={screen:'title',phase:'idle',fill:0,target:.6,combo:0,aura:0,dispAura:0,bestCombo:0,glasses:0,perfects:0,tier:0,arpLast:0,arpI:0,colSpeed:2,owned:new Set(),eq:{glass:'classic',cup:'classic',confetti:'rect'},fx:[],prestige:0,halo:false,driftT:0,upg:{},shieldReady:false,shieldCd:0,shopTab:'upgrades',quality:'auto',lowQ:false,frameEma:0.016,shopOpen:false,mod:null,time:0,shake:0,hitstop:0,pourT:0,justFailed:false,streamActive:false,streamTopY:0,targetAlpha:1,cupTilt:0,cupY:200,draining:false,fanumDone:false,fanumAt:0};
+const S={screen:'title',phase:'idle',fill:0,target:.6,combo:0,aura:0,dispAura:0,bestCombo:0,glasses:0,perfects:0,tier:0,arpLast:0,arpI:0,colSpeed:2,owned:new Set(),eq:{glass:'classic',cup:'classic',confetti:'rect',flavor:'none',charm:'none'},fx:[],golden:false,prestige:0,halo:false,driftT:0,upg:{},shieldReady:false,shieldCd:0,shopTab:'upgrades',quality:'auto',lowQ:false,frameEma:0.016,shopOpen:false,mod:null,time:0,shake:0,hitstop:0,pourT:0,justFailed:false,streamActive:false,streamTopY:0,targetAlpha:1,cupTilt:0,cupY:200,draining:false,fanumDone:false,fanumAt:0};
 const col={bg0:TIERS[0].bg0.slice(),bg1:TIERS[0].bg1.slice(),water:TIERS[0].water.slice(),deep:TIERS[0].deep.slice(),glow:TIERS[0].glow.slice()};
 let g=null; const parts=[],bubbles=[],timers=[];
 const N=48,surf={y:new Float32Array(N),v:new Float32Array(N)};
@@ -450,7 +475,7 @@ const gx=()=>g.cx+g.x+(S.mod==='wobbly'?Math.sin(S.time*2.6)*28:0);
 const halfW=y=>lerp(g.bw/2,g.tw/2,clamp((g.bottomY-y)/g.h,0,1));
 const levelY=()=>g.bottomY-S.fill*g.h;
 const cupLip=()=>({x:W/2+4,y:S.cupY});
-const impactX=()=>{const P=cupLip();return P.x+0.02*Math.max(0,levelY()-P.y)};
+const impactX=()=>{const P=cupLip();return P.x+0.02*Math.max(0,levelY()-P.y)+(S.mod==='gusty'?Math.sin(S.time*3.1)*Math.min(34,g.tw*0.22):0)};
 function surfSpan(){ const hw=halfW(levelY())+16; const c=gx(); return [c-hw,c+hw]; }
 function surfIndex(x){ const [x0,x1]=surfSpan(); return clamp(Math.round((x-x0)/(x1-x0)*(N-1)),1,N-2); }
 function surfAt(x){ const [x0,x1]=surfSpan(); const f=clamp((x-x0)/(x1-x0),0,1)*(N-1); const i=Math.floor(f),t=f-i; return lerp(surf.y[i],surf.y[Math.min(N-1,i+1)],t); }
@@ -460,8 +485,8 @@ const travelTime=()=>0.11;
 
 // ---------- save ----------
 const SAVE_V=2; // bumping this wipes aura + items on next load (economy rebalance) but keeps prestige, best combo and stats
-function load(){ try{ const d=JSON.parse(localStorage.getItem('pour_save')||'null'); if(d&&d.v!==SAVE_V){ d.aura=0; d.owned=[]; d.eq=null; d.fx=[]; d.halo=false; setTimeout(()=>toast('economy rebalanced: aura + items reset. prestige kept ★'),1500); } if(d){ S.aura=d.aura||0; S.dispAura=S.aura; S.bestCombo=d.best||0; S.glasses=d.glasses||0; S.perfects=d.perfects||0; S.owned=new Set(d.owned||[]); const eq=d.eq||{}; for(const k of ['glass','cup','confetti']) if(eq[k]) S.eq[k]=eq[k]; S.fx=(d.fx||[]).filter(id=>SKINS.water.some(w=>w.id===id)); S.prestige=d.prestige||0; S.halo=!!d.halo; S.quality=d.quality||'auto'; S.lowQ=S.quality==='low'; S.upg=d.upg||{}; S.shieldReady=!!d.shieldReady; S.shieldCd=d.shieldCd||0; } else S.bestCombo=+localStorage.getItem('pour_best')||0; }catch(e){} }
-function resetProgress(){ S.aura=0; S.dispAura=0; S.owned=new Set(); S.eq={glass:'classic',cup:'classic',confetti:'rect'}; S.fx=[]; S.halo=false; S.upg={}; S.shieldReady=false; S.shieldCd=0; if(g) layoutGlass(); save(); renderShop(); updateHUD(); toast('aura + items wiped. fresh start 🫗'); SFX.deny(); }
+function load(){ try{ const d=JSON.parse(localStorage.getItem('pour_save')||'null'); if(d&&d.v!==SAVE_V){ d.aura=0; d.owned=[]; d.eq=null; d.fx=[]; d.halo=false; setTimeout(()=>toast('economy rebalanced: aura + items reset. prestige kept ★'),1500); } if(d){ S.aura=d.aura||0; S.dispAura=S.aura; S.bestCombo=d.best||0; S.glasses=d.glasses||0; S.perfects=d.perfects||0; S.owned=new Set(d.owned||[]); const eq=d.eq||{}; for(const k of ['glass','cup','confetti','flavor','charm']) if(eq[k]) S.eq[k]=eq[k]; S.fx=(d.fx||[]).filter(id=>SKINS.water.some(w=>w.id===id)); S.prestige=d.prestige||0; S.halo=!!d.halo; S.quality=d.quality||'auto'; S.lowQ=S.quality==='low'; S.upg=d.upg||{}; S.shieldReady=!!d.shieldReady; S.shieldCd=d.shieldCd||0; } else S.bestCombo=+localStorage.getItem('pour_best')||0; }catch(e){} }
+function resetProgress(){ S.aura=0; S.dispAura=0; S.owned=new Set(); S.eq={glass:'classic',cup:'classic',confetti:'rect',flavor:'none',charm:'none'}; S.fx=[]; S.halo=false; S.upg={}; S.shieldReady=false; S.shieldCd=0; if(g) layoutGlass(); save(); renderShop(); updateHUD(); toast('aura + items wiped. fresh start 🫗'); SFX.deny(); }
 function save(){ try{ localStorage.setItem('pour_save',JSON.stringify({v:SAVE_V,aura:S.aura,best:S.bestCombo,glasses:S.glasses,perfects:S.perfects,owned:[...S.owned],eq:S.eq,fx:S.fx,prestige:S.prestige,halo:S.halo,quality:S.quality,upg:S.upg,shieldReady:S.shieldReady,shieldCd:S.shieldCd})); }catch(e){} }
 addEventListener('pagehide',save); document.addEventListener('visibilitychange',()=>{ if(document.hidden) save(); else SFX.resume(); });
 document.addEventListener('touchend',()=>SFX.resume(),{passive:true});
@@ -481,6 +506,8 @@ function startGame(){ SFX.init(); SFX.resume(); $('#unlock').play().catch(()=>{}
 function newGlass(first){
   S.draining=false; S.mod=null;
   if(!first&&S.combo>=3&&Math.random()<modChance()) S.mod=pick(MODS).id;
+  // golden glass: rare, pays x5. a little lottery in every glass.
+  S.golden=!first&&Math.random()<0.06; if(S.golden){ schedule(0.35,()=>{ toast('✨ GOLDEN GLASS · x5 aura on this one ✨'); SFX.ascend(Math.min(S.tier+2,TIERS.length-1)); }); }
   let hs=rand(0.75,1.15),ws=rand(0.8,1.15);
   if(S.mod==='shot'){hs=0.5;ws=0.7} if(S.mod==='gulp'){hs=2.1;ws=1.7}
   g={hs,ws,x:W*0.8,anim:{from:W*0.8,to:0,start:S.time,dur:0.5,ease:easeOutBack}};
@@ -490,8 +517,9 @@ function newGlass(first){
   surf.y.fill(0); surf.v.fill(0); bubbles.length=0;
   showMod();
 }
-function onDown(){ if(S.shopOpen) return; if(S.screen==='title'){ startGame(); return; } SFX.resume(); if(S.phase==='idle'){ S.phase='pouring'; S.streamActive=true; S.pourT=0; S.pourStart=performance.now(); SFX.click(); } }
-function onUp(){ if(S.phase==='pouring'){ S.phase='releasing'; S.streamTopY=cupLip().y; SFX.setPour(false); } }
+const buzz=p=>{ try{ if(navigator.vibrate) navigator.vibrate(p); }catch(e){} };
+function onDown(){ if(S.shopOpen) return; if(S.screen==='title'){ startGame(); return; } SFX.resume(); if(S.phase==='idle'){ S.phase='pouring'; S.streamActive=true; S.pourT=0; S.pourStart=performance.now(); SFX.click(); buzz(12); } }
+function onUp(){ if(S.phase==='pouring'){ S.phase='releasing'; S.streamTopY=cupLip().y; SFX.setPour(false); buzz(18); } }
 function doOverflow(){ S.fill=spillAt(); S.phase='settling'; S.streamTopY=cupLip().y; SFX.setPour(false); S.shake=12; spill(); schedule(0.22,()=>judge('over')); }
 function flash(){ if(REDUCED) return; elFlash.classList.remove('on'); void elFlash.offsetWidth; elFlash.classList.add('on'); }
 function judge(forced){
@@ -512,8 +540,10 @@ function judge(forced){
     case 'miss': if(shielded){ shieldBurst(); SFX.great(); } else { S.combo=0; SFX.miss(); } S.shake=3; break;
     case 'over': if(shielded){ shieldBurst(); SFX.great(); } else { S.combo=0; SFX.womp(); } S.shake=12; break;
   }
-  const mult=1+S.combo*comboStep(), brim=isBrim()&&(tier==='perfect'||tier==='great')?brimMult():1;
-  if(tier==='perfect') pts=Math.round(100*mult*im*mb*brim); else if(tier==='great') pts=Math.round(50*mult*im*mb*brim); else if(tier==='good') pts=Math.round(20*mult*im); else if(tier==='over'&&!shielded) pts=-250;
+  const mult=1+S.combo*comboStep(), brim=isBrim()&&(tier==='perfect'||tier==='great')?brimMult():1, gold=S.golden&&(tier==='perfect'||tier==='great')?5:1;
+  if(tier==='perfect') pts=Math.round(100*mult*im*mb*brim*gold); else if(tier==='great') pts=Math.round(50*mult*im*mb*brim*gold); else if(tier==='good') pts=Math.round(20*mult*im); else if(tier==='over'&&!shielded) pts=-250;
+  if(lost&&S.mod==='jackpot'){ const tax=Math.floor(S.aura*0.05); pts-=tax; schedule(0.25,()=>popup(`jackpot tax -${fmt(tax)} 🎰`,'pts neg',110)); }
+  if(gold>1){ confetti(80); S.shake=Math.max(S.shake,8); schedule(0.15,()=>popup('GOLDEN x5 ✨','bonus brim',-96)); }
   if(brim>1){ confetti(60); S.shake=Math.max(S.shake,6); }
   // opener hype: the first glass of a run is always a moment
   if(opener&&tier==='perfect'){ S.hitstop=0.3; S.shake=11; confetti(150); flash(); SFX.opener(); }
@@ -591,7 +621,7 @@ function renderShop(){
   elShopAura.textContent=`${fmt(S.aura)} ✨ · x${auraMult().toFixed(2)} aura${S.prestige?` · ★${S.prestige}`:''}`; let html='';
   document.querySelectorAll('#shop .tab').forEach(b=>b.classList.toggle('on',b.dataset.tab===S.shopTab));
   if(S.shopTab==='upgrades'){ elShopBody.innerHTML=renderUpgrades(); return; }
-  for(const cat of ['glass','water','cup','confetti']){
+  for(const cat of CATS){
     html+=`<h3>${CAT_NAMES[cat]}</h3><div class="grid">`;
     for(const it of SKINS[cat]){ const owned=it.price===0||S.owned.has(cat+':'+it.id),eq=cat==='water'?hasFx(it.id):S.eq[cat]===it.id,poor=!owned&&S.aura<it.price;
       const status=eq?(cat==='water'?'on ✓':'equipped'):owned?(cat==='water'?'tap to turn on':'tap to equip'):fmtShort(it.price)+' ✨';
@@ -701,6 +731,7 @@ function update(dt){
   if(S.streamActive&&S.phase!=='pouring'){ const P=cupLip(),ly=levelY(); S.streamTopY+=((ly-P.y)/travelTime())*dt; if(S.streamTopY>=ly-1) S.streamActive=false; }
   if(S.phase==='releasing'&&!S.streamActive){ S.phase='settling'; schedule(0.32,()=>judge()); }
   if(S.draining) S.fill=Math.max(0,S.fill-3.5*dt);
+  if(S.mod==='leaky'&&S.fill>0&&(S.phase==='pouring'||S.phase==='releasing'||S.phase==='settling'||S.phase==='idle')){ S.fill=Math.max(0,S.fill-0.06*dt); if(Math.random()<0.4) parts.push({type:'drop',x:gx()+g.bw*0.3,y:g.bottomY+2,vx:rand(-5,5),vy:rand(20,60),life:rand(.5,.9),size:rand(1.5,2.5)}); }
   if(hasFx('fizz')&&S.fill>0.06&&S.mod!=='blackout'&&Math.random()<(S.tier>=5?0.6:0.35)) bubbles.push({ox:rand(-1,1)*halfW(g.bottomY-10)*0.85,y:g.bottomY-rand(4,14),vy:-rand(25,65),r:rand(1,3),life:rand(1,3)});
   updateSurface(dt);
   for(let i=parts.length-1;i>=0;i--){ const p=parts[i]; if(p.type==='spark'){ if(!p.max) p.max=p.life; p.x+=Math.sin(S.time*1.5+i)*10*dt; } else if(p.type==='flame'){ if(!p.max) p.max=p.life; p.x+=Math.sin(S.time*12+i)*22*dt; } else p.vy+=(p.type==='conf'?900:700)*dt; if(p.type==='conf'){p.vx*=0.985;p.rot+=p.vr*dt;} p.x+=p.vx*dt; p.y+=p.vy*dt; p.life-=dt; if(p.life<=0||p.y>H+30) parts.splice(i,1); }
@@ -749,10 +780,12 @@ function drawWater(){
   ctx.save(); glassPath(3); ctx.clip();
   ctx.beginPath(); surfacePath(x0,x1,ly); ctx.lineTo(x1,g.bottomY+10); ctx.lineTo(x0,g.bottomY+10); ctx.closePath();
   if(dark){ ctx.fillStyle='rgba(255,255,255,0.03)'; ctx.fill(); ctx.restore(); return; }
-  const rich=Math.min(0.3,lvl('hydra')*0.01), wc=lerpC(col.water,[255,225,150],rich), dc=lerpC(col.deep,[220,160,60],rich);
+  const rich=Math.min(0.3,lvl('hydra')*0.01); let wc=lerpC(col.water,[255,225,150],rich), dc=lerpC(col.deep,[220,160,60],rich);
+  const fl=SKINS.flavor.find(f=>f.id===S.eq.flavor); if(fl&&fl.tint){ const tc=hex(fl.tint); wc=lerpC(wc,tc,0.82); dc=lerpC(dc,tc.map(v=>v*0.62),0.82); }
   const grd=ctx.createLinearGradient(0,ly,0,g.bottomY); grd.addColorStop(0,rgba(wc,0.88)); grd.addColorStop(1,rgba(dc,0.96)); ctx.fillStyle=grd; ctx.fill();
   if(hasFx('aurora')&&!S.lowQ){ const ag=ctx.createLinearGradient(x0,0,x1,0); for(let i=0;i<=4;i++) ag.addColorStop(i/4,`hsla(${(S.time*40+i*70)%360},100%,70%,0.45)`); ctx.fillStyle=ag; ctx.beginPath(); surfacePath(x0,x1,ly); ctx.lineTo(x1,ly+34*hi); ctx.lineTo(x0,ly+34*hi); ctx.closePath(); ctx.fill(); }
   for(const b of bubbles){ ctx.beginPath(); ctx.arc(cx+b.ox,b.y,b.r,0,Math.PI*2); ctx.fillStyle='rgba(255,255,255,0.35)'; ctx.fill(); }
+  drawCharm(cx,ly);
   if(hasFx('glitter')){ ctx.fillStyle='#fff'; const n=Math.round(30*hi*(S.lowQ?0.5:1)); for(let i=0;i<n;i++){ const hx=((i*7919)%1000)/1000,hy=((i*104729)%1000)/1000; const py=g.bottomY-6-hy*Math.max(0,S.fill*g.h-10); if(py<ly+4) continue; const px=cx+(hx-0.5)*halfW(py)*1.8; ctx.globalAlpha=0.3+0.7*Math.abs(Math.sin(S.time*5+i)); ctx.beginPath(); ctx.arc(px,py,1.2+(i%3)*0.6,0,Math.PI*2); ctx.fill(); } ctx.globalAlpha=1; }
   const hl=lvl('hydra'); if(hl>0){ ctx.fillStyle='#ffd166'; const span=Math.max(0,S.fill*g.h-12); for(let i=0;i<hl;i++){ const hx=((i*7717)%1000)/1000,ph=((i*3313)%1000)/1000; const py=g.bottomY-6-((ph+S.time*0.05*(0.5+hx))%1)*span; if(py<ly+4) continue; const px=cx+(hx-0.5)*halfW(py)*1.7+Math.sin(S.time*1.5+i)*4; ctx.globalAlpha=0.45+0.5*Math.abs(Math.sin(S.time*3+i)); ctx.beginPath(); ctx.arc(px,py,1.7,0,Math.PI*2); ctx.fill(); } ctx.globalAlpha=1; }
   const rb=hasFx('rainbow');
@@ -761,8 +794,18 @@ function drawWater(){
   ctx.restore();
   if(hasFx('neon')){ ctx.save(); ctx.beginPath(); surfacePath(x0+16,x1-16,ly); glowStroke(`${col.water[0]|0},${col.water[1]|0},${col.water[2]|0}`,0.9,3,S.lowQ?1:(hi>1?5:4)); ctx.restore(); }
 }
+// charms live inside the water clip: floaters bob on the surface, pearls sit on the bottom, ice cubes drift
+function drawCharm(cx,ly){
+  const ch=SKINS.charm.find(c=>c.id===S.eq.charm); if(!ch||ch.id==='none') return; const t=S.time, sz=Math.round(clamp(g.tw*0.17,22,56));
+  if(ch.pearls){ if(S.fill*g.h<22) return; for(let i=0;i<10;i++){ const px=cx+(i-4.5)*(g.bw/10)*0.9, py=g.bottomY-9-(i%2)*10+Math.sin(t*3+i)*1.5; ctx.beginPath(); ctx.arc(px,py,6,0,Math.PI*2); ctx.fillStyle='#2b1a12'; ctx.fill(); ctx.beginPath(); ctx.arc(px-2,py-2,1.8,0,Math.PI*2); ctx.fillStyle='rgba(255,255,255,0.35)'; ctx.fill(); } return; }
+  if(S.fill*g.h<sz*0.8) return;
+  if(ch.ice){ ctx.save(); for(let i=0;i<3;i++){ const px=cx+(i-1)*halfW(ly)*0.5+Math.sin(t*1.2+i*2)*6, py=ly+surfAt(px)+6+Math.sin(t*2+i)*3, s=sz*0.7; ctx.translate(px,py); ctx.rotate(Math.sin(t*0.8+i)*0.25); ctx.fillStyle='rgba(220,245,255,0.55)'; ctx.strokeStyle='rgba(255,255,255,0.8)'; ctx.lineWidth=2; ctx.beginPath(); ctx.roundRect(-s/2,-s/2,s,s,5); ctx.fill(); ctx.stroke(); ctx.fillStyle='rgba(255,255,255,0.5)'; ctx.fillRect(-s/2+4,-s/2+4,s*0.35,4); ctx.setTransform(canvas.width/W,0,0,canvas.height/H,0,0); } ctx.restore(); return; }
+  const px=cx+halfW(ly)*0.35, py=ch.hover?ly-sz*0.9+Math.sin(t*1.6)*8:ly+surfAt(px)-sz*0.15+Math.sin(t*2.2)*2; const sp=sprite(ch.char,sz);
+  ctx.save(); ctx.translate(px,py); ctx.rotate(Math.sin(t*1.5)*0.12); if(ch.hover) ctx.globalAlpha=0.85; ctx.drawImage(sp,-sp.px/2,-sp.px/2,sp.px,sp.px); ctx.restore();
+}
 function drawGlassFront(){
-  const cx=gx(),t=g.bottomY-g.h,sk=glassSkin(),gold=sk.id==='trophy',line=gold?'rgba(255,209,102,0.9)':'rgba(255,255,255,0.55)';
+  const cx=gx(),t=g.bottomY-g.h,sk=glassSkin(),gold=sk.id==='trophy'||S.golden,line=gold?'rgba(255,209,102,0.9)':'rgba(255,255,255,0.55)';
+  if(S.golden){ ctx.save(); glassPath(0); glowStroke('255,209,102',0.5+0.3*Math.sin(S.time*5),3,S.lowQ?1:3); ctx.restore(); ctx.fillStyle='#fff'; for(let i=0;i<5;i++){ const tw=Math.abs(Math.sin(S.time*4+i*1.3)); const sx=cx+((i*7919%1000)/1000-0.5)*g.tw*1.1, sy=t+((i*104729%1000)/1000)*g.h, r=1.5+tw*2.5; ctx.globalAlpha=tw; ctx.beginPath(); ctx.moveTo(sx-r*2,sy); ctx.lineTo(sx,sy-r*0.6); ctx.lineTo(sx+r*2,sy); ctx.lineTo(sx,sy+r*0.6); ctx.closePath(); ctx.fill(); ctx.beginPath(); ctx.moveTo(sx,sy-r*2); ctx.lineTo(sx+r*0.6,sy); ctx.lineTo(sx,sy+r*2); ctx.lineTo(sx-r*0.6,sy); ctx.closePath(); ctx.fill(); } ctx.globalAlpha=1; }
   glassPath(0); ctx.strokeStyle=line; ctx.lineWidth=3; ctx.lineJoin='round'; ctx.stroke();
   ctx.beginPath(); ctx.moveTo(cx-g.tw/2-2,t); ctx.lineTo(cx+g.tw/2+2,t); ctx.strokeStyle=gold?'#ffd166':'rgba(255,255,255,0.85)'; ctx.lineWidth=5; ctx.lineCap='round'; ctx.stroke();
   ctx.beginPath(); ctx.moveTo(cx-g.tw/2+11,t+18); ctx.lineTo(cx-g.bw/2+10,g.bottomY-26); ctx.strokeStyle='rgba(255,255,255,0.28)'; ctx.lineWidth=4; ctx.stroke();
@@ -771,7 +814,7 @@ function drawGlassFront(){
   if(sk.id==='martini'){ ctx.strokeStyle=line; ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(cx,g.bottomY); ctx.lineTo(cx,g.bottomY+44); ctx.stroke(); ctx.beginPath(); ctx.ellipse(cx,g.bottomY+46,g.tw*0.28,7,0,0,Math.PI*2); ctx.stroke(); }
   if(sk.id==='goblet'){ ctx.strokeStyle=line; ctx.lineWidth=5; ctx.beginPath(); ctx.moveTo(cx,g.bottomY); ctx.lineTo(cx,g.bottomY+30); ctx.stroke(); ctx.beginPath(); ctx.ellipse(cx,g.bottomY+34,g.tw*0.32,8,0,0,Math.PI*2); ctx.fillStyle='rgba(255,255,255,0.15)'; ctx.fill(); ctx.stroke(); }
   if(sk.id==='crystal'){ ctx.save(); glassPath(0); glowStroke(`${col.glow[0]|0},${col.glow[1]|0},${col.glow[2]|0}`,0.9,3.5,S.lowQ?1:4); ctx.restore(); glassPath(0); ctx.strokeStyle=`hsla(${(S.time*60)%360},100%,75%,0.7)`; ctx.lineWidth=1.5; ctx.stroke(); ctx.beginPath(); ctx.moveTo(cx+g.tw/2-14,t+16); ctx.lineTo(cx+g.bw/2-12,g.bottomY-30); ctx.strokeStyle=`hsla(${(S.time*60+180)%360},100%,80%,0.5)`; ctx.lineWidth=3; ctx.stroke(); }
-  if(gold){ const my=g.bottomY-g.h*0.55; ctx.strokeStyle='#ffd166'; ctx.lineWidth=5; [-1,1].forEach(s=>{ ctx.beginPath(); ctx.ellipse(cx+s*(halfW(my)+16),my,17,30,0,s>0?-Math.PI/2:Math.PI/2,s>0?Math.PI/2:Math.PI*1.5); ctx.stroke(); }); ctx.fillStyle='#ffd166'; ctx.fillRect(cx-g.tw*0.28,g.bottomY+3,g.tw*0.56,9); }
+  if(sk.id==='trophy'){ const my=g.bottomY-g.h*0.55; ctx.strokeStyle='#ffd166'; ctx.lineWidth=5; [-1,1].forEach(s=>{ ctx.beginPath(); ctx.ellipse(cx+s*(halfW(my)+16),my,17,30,0,s>0?-Math.PI/2:Math.PI/2,s>0?Math.PI/2:Math.PI*1.5); ctx.stroke(); }); ctx.fillStyle='#ffd166'; ctx.fillRect(cx-g.tw*0.28,g.bottomY+3,g.tw*0.56,9); }
 }
 function drawTarget(){
   if(S.targetAlpha<=0.01) return;
