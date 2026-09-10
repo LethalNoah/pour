@@ -129,6 +129,15 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none;background:#06091
 .pop.bonus{font-size:22px;font-weight:700;color:#ffd166;animation-delay:.2s,1.05s}
 .pop.back{font-size:clamp(56px,9vw,100px);background:linear-gradient(90deg,#fff,#ffe36e,#ff5c3a,#ff2d9a,#ffe36e,#fff);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 4px rgba(0,0,0,.8)) drop-shadow(0 0 30px rgba(255,120,40,.9));animation:popIn .55s cubic-bezier(.17,2,.4,1) forwards,popOut .5s ease-in 1.7s forwards,shimmer .5s linear infinite,backShake .6s ease-in-out .15s}
 @keyframes backShake{0%,100%{margin-left:0}20%{margin-left:-14px}40%{margin-left:12px}60%{margin-left:-8px}80%{margin-left:6px}}
+#slot{position:fixed;left:50%;top:22%;transform:translateX(-50%);z-index:14;pointer-events:none;text-align:center;animation:popIn .5s cubic-bezier(.17,1.8,.4,1)}
+#slot[hidden]{display:none}
+#slot .reels{display:flex;gap:8px;justify-content:center}
+#slot .reels span{width:clamp(56px,9vw,84px);height:clamp(64px,10vw,96px);display:flex;align-items:center;justify-content:center;font-size:clamp(34px,5.5vw,52px);background:rgba(6,9,26,.85);border:2px solid rgba(255,209,102,.6);border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.5);transition:transform .15s}
+#slot .reels span.stop{transform:scale(1.12);border-color:#ffd166;background:rgba(255,209,102,.18)}
+#slot .prize{margin-top:8px;font-size:clamp(15px,2.2vw,20px);font-weight:700;color:#ffd166;text-shadow:0 2px 12px rgba(0,0,0,.6);background:rgba(6,9,26,.75);padding:6px 14px;border-radius:999px;display:inline-block}
+#slot.done .reels span{animation:reelPop .4s cubic-bezier(.17,1.8,.4,1)}
+#slot.jackpot .reels span{border-color:#fff;background:linear-gradient(135deg,rgba(255,209,102,.5),rgba(255,120,180,.5))}
+@keyframes reelPop{50%{transform:scale(1.3) rotate(-4deg)}100%{transform:scale(1.12)}}
 #flash{position:fixed;inset:0;background:radial-gradient(circle at 50% 45%,#fff,#ffe9b0 40%,rgba(255,150,60,.6) 70%,transparent);opacity:0;pointer-events:none;z-index:15}
 #flash.on{animation:flashAnim .8s ease-out forwards}
 @keyframes flashAnim{0%{opacity:.95}100%{opacity:0}}
@@ -169,7 +178,7 @@ body.lowq #shopBtn.can::before{animation:none}
 <body>
 <canvas id="c"></canvas>
 <div id="hud">
-  <div id="aura" class="panelbox"><span class="lbl">aura ✨</span><span id="auraNum">0</span><span id="lvl" class="lbl lvl">lv 0</span></div>
+  <div id="aura" class="panelbox"><span class="lbl">aura ✨</span><span id="auraNum">0</span><span id="lvl" class="lbl lvl">lv 0 · x1.00 aura</span></div>
   <div id="combo" class="panelbox"><span id="comboNum">x0</span><span class="lbl">combo 🔥</span><span id="prest" class="lbl prest" hidden></span></div>
   <div id="vibe">npc mode 🌑</div>
   <div id="mod"></div>
@@ -181,6 +190,7 @@ body.lowq #shopBtn.can::before{animation:none}
   <button id="shopBtn">🛍️ shop</button>
 </div>
 <div id="flash"></div>
+<div id="slot" hidden><div class="reels"><span>🍋</span><span>🍒</span><span>🔥</span></div><div class="prize">spin</div></div>
 <div id="shop" hidden>
   <div class="panel">
     <div class="head"><span>aura shop 🛍️</span><span id="shopAura">0 ✨</span><button id="shopClose">✕</button></div>
@@ -205,7 +215,7 @@ body.lowq #shopBtn.can::before{animation:none}
 <audio id="unlock" loop playsinline preload="auto" src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA="></audio>
 <script>
 'use strict';
-const VERSION='1.3.0';
+const VERSION='1.4.0';
 const $=s=>document.querySelector(s);
 const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const IS_IOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
@@ -326,15 +336,15 @@ const hasFx=id=>S.fx.includes(id);
 // nine pathways. costs grow exponentially, bonuses compound multiplicatively. all aura still comes from pouring.
 const UPG=[
  {id:'hydra',name:'hydration',emoji:'💧',base:25000,growth:1.5,max:30,req:null,
-  blurb:'+12% aura per level. the water gets richer.',fx:l=>`+${l*12}% aura`},
+  blurb:'+15% aura per level. the water gets richer.',fx:l=>`+${l*15}% aura`},
  {id:'combo',name:'combo engine',emoji:'🔥',base:60000,growth:1.55,max:20,req:{hydra:3},
-  blurb:'each combo adds more. flames off the rim.',fx:l=>`+${(0.5+0.05*l).toFixed(2)} per combo`},
+  blurb:'each combo adds more. flames off the rim.',fx:l=>`+${(0.5+0.12*l).toFixed(2)} per combo (x20 pays x${(1+20*(0.5+0.12*l)).toFixed(0)})`},
  {id:'hands',name:'steady hands',emoji:'🎯',base:120000,growth:1.8,max:10,req:{hydra:5},
   blurb:'wider perfect window. the band grows.',fx:l=>`perfect ±${((0.015+0.001*l)*100).toFixed(1)}%`},
  {id:'comeback',name:'redemption',emoji:'📈',base:80000,growth:1.6,max:15,req:{combo:2},
-  blurb:'bigger comeback bonus after a loss.',fx:l=>`comeback +${fmt(500*(1+0.5*l))}`},
+  blurb:'bigger comeback bonus, and a comeback restores part of the combo you lost.',fx:l=>`+${fmt(2500*(1+0.5*l))} · restores ${l*5}% of lost combo`},
  {id:'opener',name:'ignition',emoji:'🚀',base:150000,growth:1.7,max:10,req:{combo:3},
-  blurb:'a perfect opener starts higher.',fx:l=>`opener x${5+l}`},
+  blurb:'a perfect opener starts higher. a close one too.',fx:l=>`perfect opener x${5+Math.round(1.5*l)} · great x${3+Math.floor(l/2)}`},
  {id:'chal',name:'challenge master',emoji:'🎲',base:100000,growth:1.6,max:15,req:{hands:2},
   blurb:'bigger challenge bonuses, more challenges.',fx:l=>`+${l*15}% bonus · ${Math.round(Math.min(0.7,0.4+0.02*l)*100)}% odds`},
  {id:'brim',name:'surface tension',emoji:'🧢',base:200000,growth:1.7,max:10,req:{hands:3},
@@ -348,16 +358,18 @@ const lvl=id=>S.upg[id]||0;
 const upgCost=u=>Math.round(u.base*Math.pow(u.growth,lvl(u.id)));
 const totalLvl=()=>UPG.reduce((a,u)=>a+lvl(u.id),0);
 function upgReq(u){ if(!u.req) return null; for(const k in u.req){ const need=u.req[k]; if(k==='best'){ if(S.bestCombo<need) return `reach a x${need} combo`; } else if(k==='prestige'){ if(S.prestige<need) return `prestige once`; } else if(lvl(k)<need){ const o=UPG.find(x=>x.id===k); return `${o.name} lv ${need}`; } } return null; }
-const comboStep=()=>0.5+0.05*lvl('combo');
-const openerCombo=()=>5+lvl('opener');
+const comboStep=()=>0.5+0.12*lvl('combo');
+const openerCombo=()=>5+Math.round(1.5*lvl('opener'));
+const openerGreat=()=>3+Math.floor(lvl('opener')/2);
 const brimMult=()=>3+0.5*lvl('brim');
-const comebackBase=()=>500*(1+0.5*lvl('comeback'));
+const comebackBase=()=>2500*(1+0.5*lvl('comeback'));
+const comebackRestore=lost=>Math.round(lost*0.05*lvl('comeback'));
 const haloMult=()=>2+0.25*lvl('halo');
 const modBonusOf=m=>1+(m.bonus-1)*(1+0.15*lvl('chal'));
 const modChance=()=>Math.min(0.7,0.4+0.02*lvl('chal'));
 const shieldRecharge=()=>Math.max(3,12-lvl('shield'));
 // prestige: +25% aura per rank forever; halo multiplies aura from x100 until the next loss.
-const auraMult=()=>itemMult()*(1+0.25*S.prestige)*(S.halo?haloMult():1)*(1+0.12*lvl('hydra'));
+const auraMult=()=>itemMult()*(1+0.25*S.prestige)*(S.halo?haloMult():1)*(1+0.15*lvl('hydra'));
 const canAffordAnyUpg=()=>UPG.some(u=>lvl(u.id)<u.max&&!upgReq(u)&&S.aura>=upgCost(u));
 // emoji sprite cache: fillText per particle per frame is what made emoji confetti lag.
 const spriteCache={};
@@ -498,7 +510,7 @@ function popup(text,kind,dy=0){ const el=document.createElement('div'); el.class
   // secondary popups (dy>0) stack under the main one's real height so wrapped text never overlaps
   if(dy>0&&S.lastPopY!=null) y=Math.max(y,S.lastPopY+S.lastPopH/2+18+(dy-54)); el.style.left=x+'px'; el.style.top=y+'px'; el.style.setProperty('--r',rand(-7,7).toFixed(1)+'deg'); if(kind==='perfect'||kind==='milestone') el.style.fontSize=Math.min((kind==='perfect'?58:50)*(1+Math.min(S.combo,12)*0.025),W*0.11)+'px'; elPops.appendChild(el); if(dy<=0){ S.lastPopY=y; S.lastPopH=el.offsetHeight; } setTimeout(()=>el.remove(),2000); }
 function bump(el){ el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); setTimeout(()=>el.classList.remove('bump'),160); }
-function updateHUD(){ elCombo.textContent='x'+S.combo; $('#lvl').textContent='lv '+totalLvl(); elShopBtn.classList.toggle('can',canAffordAnyUpg()); elPrest.textContent=S.prestige>0?`★ prestige ${S.prestige}`:''; elPrest.hidden=S.prestige===0; $('#combo').classList.toggle('halo',S.halo); elCombo.classList.toggle('hot',S.combo>=3&&S.combo<10); elCombo.classList.toggle('insane',S.combo>=10); elStats.textContent=`${S.glasses} poured · ${S.perfects} perfect · best combo x${S.bestCombo} · v${VERSION}`; if(S.glasses>=3) elHint.style.opacity=0; }
+function updateHUD(){ elCombo.textContent='x'+S.combo; $('#lvl').textContent=`lv ${totalLvl()} · x${auraMult().toFixed(2)} aura`; elShopBtn.classList.toggle('can',canAffordAnyUpg()); elPrest.textContent=S.prestige>0?`★ prestige ${S.prestige}`:''; elPrest.hidden=S.prestige===0; $('#combo').classList.toggle('halo',S.halo); elCombo.classList.toggle('hot',S.combo>=3&&S.combo<10); elCombo.classList.toggle('insane',S.combo>=10); elStats.textContent=`${S.glasses} poured · ${S.perfects} perfect · best combo x${S.bestCombo} · v${VERSION}`; if(S.glasses>=3) elHint.style.opacity=0; }
 function showMod(){ if(S.mod){ const m=MODS.find(m=>m.id===S.mod); elMod.innerHTML=`<b>${m.label}</b><span class="mdesc">${m.desc}</span><span class="bonus">bonus x${modBonusOf(m).toFixed(2).replace(/\.?0+$/,'')} aura</span>`; elMod.classList.add('on'); SFX.mod(); if(W<=640) toast(`${m.label} · ${m.desc}`); } else elMod.classList.remove('on'); }
 
 // ---------- flow ----------
@@ -507,7 +519,7 @@ function newGlass(first){
   S.draining=false; S.mod=null;
   if(!first&&S.combo>=3&&Math.random()<modChance()) S.mod=pick(MODS).id;
   // golden glass: rare, pays x5. a little lottery in every glass.
-  S.golden=!first&&Math.random()<0.06; if(S.golden){ schedule(0.35,()=>{ toast('✨ GOLDEN GLASS · x5 aura on this one ✨'); SFX.ascend(Math.min(S.tier+2,TIERS.length-1)); }); }
+  S.golden=S.forceGolden||(!first&&Math.random()<0.06); S.forceGolden=false; if(S.golden){ schedule(0.35,()=>{ toast('✨ GOLDEN GLASS · x5 aura on this one ✨'); SFX.ascend(Math.min(S.tier+2,TIERS.length-1)); }); }
   let hs=rand(0.75,1.15),ws=rand(0.8,1.15);
   if(S.mod==='shot'){hs=0.5;ws=0.7} if(S.mod==='gulp'){hs=2.1;ws=1.7}
   g={hs,ws,x:W*0.8,anim:{from:W*0.8,to:0,start:S.time,dur:0.5,ease:easeOutBack}};
@@ -534,14 +546,16 @@ function judge(forced){
   const comeback=tier==='perfect'&&S.justFailed;
   S.glasses++;
   switch(tier){
-    case 'perfect': S.combo=opener?openerCombo():S.combo+1; S.perfects++; S.hitstop=0.13; S.shake=4; confetti(50); SFX.perfect(); if(navigator.vibrate) navigator.vibrate([20,30,20]); break;
-    case 'great': S.combo=opener?3:S.combo+1; confetti(16); SFX.great(); break;
+    case 'perfect': S.combo=opener?Math.max(openerCombo(),comeback?comebackRestore(S.lostCombo||0):0):S.combo+1; S.perfects++; S.hitstop=0.13; S.shake=4; confetti(50); SFX.perfect(); buzz([20,30,20]); break;
+    case 'great': S.combo=opener?openerGreat():S.combo+1; confetti(16); SFX.great(); break;
     case 'good': if(opener) S.combo=1; SFX.good(); break;
-    case 'miss': if(shielded){ shieldBurst(); SFX.great(); } else { S.combo=0; SFX.miss(); } S.shake=3; break;
-    case 'over': if(shielded){ shieldBurst(); SFX.great(); } else { S.combo=0; SFX.womp(); } S.shake=12; break;
+    case 'miss': if(shielded){ shieldBurst(); SFX.great(); } else { S.lostCombo=S.combo; S.combo=0; SFX.miss(); } S.shake=3; break;
+    case 'over': if(shielded){ shieldBurst(); SFX.great(); } else { S.lostCombo=S.combo; S.combo=0; SFX.womp(); } S.shake=12; break;
   }
-  const mult=1+S.combo*comboStep(), brim=isBrim()&&(tier==='perfect'||tier==='great')?brimMult():1, gold=S.golden&&(tier==='perfect'||tier==='great')?5:1;
-  if(tier==='perfect') pts=Math.round(100*mult*im*mb*brim*gold); else if(tier==='great') pts=Math.round(50*mult*im*mb*brim*gold); else if(tier==='good') pts=Math.round(20*mult*im); else if(tier==='over'&&!shielded) pts=-250;
+  const mult=1+S.combo*comboStep(), brim=isBrim()&&(tier==='perfect'||tier==='great')?brimMult():1, gold=S.golden&&(tier==='perfect'||tier==='great')?5:1, nm=S.nextMult||1; S.nextMult=1;
+  if(tier==='perfect') pts=Math.round(100*mult*im*mb*brim*gold*nm); else if(tier==='great') pts=Math.round(50*mult*im*mb*brim*gold*nm); else if(tier==='good') pts=Math.round(20*mult*im); else if(tier==='over'&&!shielded) pts=-250;
+  if(nm>1){ if(tier==='perfect'||tier==='great') schedule(0.2,()=>popup(`slot x${nm} 🎰`,'bonus brim',-120)); else schedule(0.2,()=>toast(`x${nm} slot bonus wasted 💀`)); }
+  if(comeback&&S.combo>openerCombo()) schedule(0.9,()=>toast(`redemption: restored to x${S.combo} 📈`));
   if(lost&&S.mod==='jackpot'){ const tax=Math.floor(S.aura*0.05); pts-=tax; schedule(0.25,()=>popup(`jackpot tax -${fmt(tax)} 🎰`,'pts neg',110)); }
   if(gold>1){ confetti(80); S.shake=Math.max(S.shake,8); schedule(0.15,()=>popup('GOLDEN x5 ✨','bonus brim',-96)); }
   if(brim>1){ confetti(60); S.shake=Math.max(S.shake,6); }
@@ -570,6 +584,7 @@ function judge(forced){
   if(tier==='perfect'||tier==='great') bump(elCombo);
   if(mb>1&&(tier==='perfect'||tier==='great')) { const el=[...document.querySelectorAll('.pop.bonus')].pop(); if(el&&lvl('chal')) el.textContent=`challenge x${mb.toFixed(2)} 🎲`; }
   const prestiged=S.combo>=100; if(prestiged) prestige();
+  if(!prestiged&&(tier==='perfect'||tier==='great')&&Math.floor(S.combo/10)>Math.floor(prevCombo/10)) schedule(0.55,spinSlot);
   const nt=S.halo?TIERS.length-1:tierFor(S.combo), tierUp=nt>S.tier;
   if(!prestiged&&!opener&&MILESTONES[S.combo]&&(tier==='perfect'||tier==='great')) schedule(0.35,()=>{ popup(MILESTONES[S.combo],'milestone',-70); confetti(120); if(!tierUp) SFX.milestone(); });
   if(tierUp) schedule(0.3,()=>setTier(nt)); else if(nt<S.tier) setTier(nt); else if(prestiged) setTier(nt);
@@ -579,6 +594,35 @@ function judge(forced){
   schedule(0.55,exitGlass);
 }
 function exitGlass(){ S.phase='exit'; S.draining=true; SFX.gulp(); g.anim={from:0,to:-W*0.9,start:S.time,dur:0.32,ease:easeInBack}; elMod.classList.remove('on'); schedule(0.3,()=>newGlass(false)); }
+// ---------- milestone slots (every 10 combo) ----------
+const PRIZES=[
+ {e:'🍋',w:28,t:'x2 aura on the next glass',f:()=>{S.nextMult=2;}},
+ {e:'🍒',w:16,t:'x3 aura on the next glass',f:()=>{S.nextMult=3;}},
+ {e:'🔥',w:15,t:'+5 combo',f:()=>{S.combo+=5;}},
+ {e:'🛡️',w:10,t:'shield charged',f:()=>{ if(lvl('shield')>0){ S.shieldReady=true; S.shieldCd=0; } else S.combo+=3; },alt:'+3 combo (no shield yet)'},
+ {e:'✨',w:12,t:'golden glass next',f:()=>{S.forceGolden=true;}},
+ {e:'💰',w:8,t:'+10% aura bank',f:()=>{S.aura+=Math.floor(S.aura*0.1);}},
+ {e:'💀',w:11,t:'nothing. lol.',f:()=>{}},
+ {e:'🎰',w:4,t:'JACKPOT · x10 on the next glass',f:()=>{S.nextMult=10;}},
+];
+const elSlot=$('#slot'),slotReels=[...document.querySelectorAll('#slot .reels span')],elSlotPrize=$('#slot .prize');
+let slotBusy=false;
+function spinSlot(){
+  if(slotBusy) return; slotBusy=true;
+  const total=PRIZES.reduce((a,p)=>a+p.w,0); let roll=Math.random()*total, prize=PRIZES[0]; for(const p of PRIZES){ if(roll<p.w){ prize=p; break; } roll-=p.w; }
+  const nothing=prize.e==='💀', pool=PRIZES.map(p=>p.e);
+  elSlot.hidden=false; elSlot.classList.remove('done','jackpot'); elSlotPrize.textContent='x'+S.combo+' · spin';
+  const stopAt=[550,850,1150], t0=performance.now(); let lastTick=0;
+  const tick=()=>{ const now=performance.now()-t0; let allStopped=true;
+    slotReels.forEach((r,i)=>{ if(now<stopAt[i]){ allStopped=false; if(now-lastTick>55){ r.textContent=pick(pool); } } else if(!r.dataset.set){ r.dataset.set=1; r.textContent=nothing?pool[(i*3+1)%pool.length]:prize.e; r.classList.add('stop'); SFX.tone(700+i*200,0.08,{vol:0.08,type:'triangle'}); } });
+    if(now-lastTick>55){ lastTick=now; if(!allStopped) SFX.tone(1400,0.03,{vol:0.025,type:'square'}); }
+    if(!allStopped) requestAnimationFrame(tick); else finish();
+  };
+  const finish=()=>{ const txt=(prize.alt&&lvl('shield')===0)?prize.alt:prize.t; prize.f(); elSlotPrize.textContent=txt; elSlot.classList.add('done'); if(prize.e==='🎰'){ elSlot.classList.add('jackpot'); flash(); confetti(200); S.shake=10; SFX.soBack(); } else if(nothing){ SFX.miss(); } else { SFX.buy(); confetti(50); }
+    updateHUD(); const nt=S.halo?TIERS.length-1:tierFor(S.combo); if(nt>S.tier) setTier(nt); save();
+    setTimeout(()=>{ elSlot.hidden=true; slotReels.forEach(r=>{ delete r.dataset.set; r.classList.remove('stop'); }); slotBusy=false; },1600); };
+  slotReels.forEach(r=>{ delete r.dataset.set; r.classList.remove('stop'); }); requestAnimationFrame(tick);
+}
 function shieldBurst(){ const cx=gx(),cy=g.bottomY-g.h/2; for(let i=0;i<40;i++){ const a=rand(0,Math.PI*2); parts.push({type:'conf',x:cx+Math.cos(a)*g.tw*0.9,y:cy+Math.sin(a)*g.h*0.7,vx:Math.cos(a)*rand(150,400),vy:Math.sin(a)*rand(150,400)-100,rot:a,vr:rand(-10,10),color:'#9be7ff',w:rand(6,12),h:3,life:rand(.6,1.1)}); } flash(); }
 function prestige(){
   S.bestCombo=Math.max(S.bestCombo,S.combo); S.prestige++; S.halo=true; S.combo=0; save(); updateHUD();
