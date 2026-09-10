@@ -129,15 +129,6 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none;background:#06091
 .pop.bonus{font-size:22px;font-weight:700;color:#ffd166;animation-delay:.2s,1.05s}
 .pop.back{font-size:clamp(56px,9vw,100px);background:linear-gradient(90deg,#fff,#ffe36e,#ff5c3a,#ff2d9a,#ffe36e,#fff);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 4px rgba(0,0,0,.8)) drop-shadow(0 0 30px rgba(255,120,40,.9));animation:popIn .55s cubic-bezier(.17,2,.4,1) forwards,popOut .5s ease-in 1.7s forwards,shimmer .5s linear infinite,backShake .6s ease-in-out .15s}
 @keyframes backShake{0%,100%{margin-left:0}20%{margin-left:-14px}40%{margin-left:12px}60%{margin-left:-8px}80%{margin-left:6px}}
-#slot{position:fixed;left:50%;top:22%;transform:translateX(-50%);z-index:14;pointer-events:none;text-align:center;animation:popIn .5s cubic-bezier(.17,1.8,.4,1)}
-#slot[hidden]{display:none}
-#slot .reels{display:flex;gap:8px;justify-content:center}
-#slot .reels span{width:clamp(56px,9vw,84px);height:clamp(64px,10vw,96px);display:flex;align-items:center;justify-content:center;font-size:clamp(34px,5.5vw,52px);background:rgba(6,9,26,.85);border:2px solid rgba(255,209,102,.6);border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.5);transition:transform .15s}
-#slot .reels span.stop{transform:scale(1.12);border-color:#ffd166;background:rgba(255,209,102,.18)}
-#slot .prize{margin-top:8px;font-size:clamp(15px,2.2vw,20px);font-weight:700;color:#ffd166;text-shadow:0 2px 12px rgba(0,0,0,.6);background:rgba(6,9,26,.75);padding:6px 14px;border-radius:999px;display:inline-block}
-#slot.done .reels span{animation:reelPop .4s cubic-bezier(.17,1.8,.4,1)}
-#slot.jackpot .reels span{border-color:#fff;background:linear-gradient(135deg,rgba(255,209,102,.5),rgba(255,120,180,.5))}
-@keyframes reelPop{50%{transform:scale(1.3) rotate(-4deg)}100%{transform:scale(1.12)}}
 #flash{position:fixed;inset:0;background:radial-gradient(circle at 50% 45%,#fff,#ffe9b0 40%,rgba(255,150,60,.6) 70%,transparent);opacity:0;pointer-events:none;z-index:15}
 #flash.on{animation:flashAnim .8s ease-out forwards}
 @keyframes flashAnim{0%{opacity:.95}100%{opacity:0}}
@@ -164,8 +155,8 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none;background:#06091
 @media (prefers-reduced-motion:reduce){.pop,#flash.on,#shopBtn,#combo.halo{animation-duration:.01s!important}}
 #qualityBtn{display:inline-block;margin:10px 6px 0;background:none;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.45);font-family:inherit;font-size:11px;letter-spacing:.06em;padding:6px 12px;border-radius:999px;cursor:pointer;transition:all .2s}
 #qualityBtn:hover{color:#fff;border-color:rgba(255,255,255,.4)}
-#resetBtn,#wipeBtn,#dbgBtn{display:inline-block;margin:10px 6px 0}
-#dbgBtn{background:none;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.45);font-family:inherit;font-size:11px;letter-spacing:.06em;padding:6px 12px;border-radius:999px;cursor:pointer}
+#resetBtn,#wipeBtn,#dbgBtn,#hapBtn{display:inline-block;margin:10px 6px 0}
+#dbgBtn,#hapBtn{background:none;border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.45);font-family:inherit;font-size:11px;letter-spacing:.06em;padding:6px 12px;border-radius:999px;cursor:pointer}
 #dbg{margin-top:10px;font:11px/1.5 ui-monospace,Consolas,monospace;white-space:pre-wrap;word-break:break-word;background:rgba(0,0,0,.35);border-radius:10px;padding:10px;color:#b8ffcf;user-select:text;-webkit-user-select:text}
 #dbg[hidden]{display:none}
 body.lowq #shopBtn.can::before{animation:none}
@@ -190,14 +181,13 @@ body.lowq #shopBtn.can::before{animation:none}
   <button id="shopBtn">🛍️ shop</button>
 </div>
 <div id="flash"></div>
-<div id="slot" hidden><div class="reels"><span>🍋</span><span>🍒</span><span>🔥</span></div><div class="prize">spin</div></div>
 <div id="shop" hidden>
   <div class="panel">
     <div class="head"><span>aura shop 🛍️</span><span id="shopAura">0 ✨</span><button id="shopClose">✕</button></div>
     <div class="tabs"><button class="tab on" data-tab="upgrades">⬆️ upgrades</button><button class="tab" data-tab="style">✨ style</button></div>
     <div id="shopBody"></div>
     <p class="fine">every item boosts the aura you earn. water effects stack. spending never touches your combo. no refunds. no cap.</p>
-    <div class="foot"><button id="installBtn2" hidden>📲 install as an app</button><button id="qualityBtn">graphics: auto</button><button id="resetBtn">reset aura &amp; items</button><button id="wipeBtn">🧪 dev: wipe everything</button><button id="dbgBtn">🐛 debug</button></div>
+    <div class="foot"><button id="installBtn2" hidden>📲 install as an app</button><button id="qualityBtn">graphics: auto</button><button id="resetBtn">reset aura &amp; items</button><button id="wipeBtn">🧪 dev: wipe everything</button><button id="dbgBtn">🐛 debug</button><button id="hapBtn">📳 test haptics</button></div>
     <pre id="dbg" hidden></pre>
   </div>
 </div>
@@ -215,7 +205,7 @@ body.lowq #shopBtn.can::before{animation:none}
 <audio id="unlock" loop playsinline preload="auto" src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA="></audio>
 <script>
 'use strict';
-const VERSION='1.4.0';
+const VERSION='1.4.1';
 const $=s=>document.querySelector(s);
 const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const IS_IOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
@@ -530,8 +520,8 @@ function newGlass(first){
   showMod();
 }
 const buzz=p=>{ try{ if(navigator.vibrate) navigator.vibrate(p); }catch(e){} };
-function onDown(){ if(S.shopOpen) return; if(S.screen==='title'){ startGame(); return; } SFX.resume(); if(S.phase==='idle'){ S.phase='pouring'; S.streamActive=true; S.pourT=0; S.pourStart=performance.now(); SFX.click(); buzz(12); } }
-function onUp(){ if(S.phase==='pouring'){ S.phase='releasing'; S.streamTopY=cupLip().y; SFX.setPour(false); buzz(18); } }
+function onDown(){ if(S.shopOpen) return; if(S.screen==='title'){ startGame(); return; } SFX.resume(); if(S.phase==='slot'&&S.slot&&!S.slot.done){ S.slot.hold=true; SFX.setPour(true,1-S.fill,0.5); buzz(30); return; } if(S.phase==='idle'){ S.phase='pouring'; S.streamActive=true; S.pourT=0; S.pourStart=performance.now(); SFX.click(); buzz(30); } }
+function onUp(){ if(S.phase==='slot'&&S.slot){ S.slot.hold=false; SFX.setPour(false); return; } if(S.phase==='pouring'){ S.phase='releasing'; S.streamTopY=cupLip().y; SFX.setPour(false); buzz(40); } }
 function doOverflow(){ S.fill=spillAt(); S.phase='settling'; S.streamTopY=cupLip().y; SFX.setPour(false); S.shake=12; spill(); schedule(0.22,()=>judge('over')); }
 function flash(){ if(REDUCED) return; elFlash.classList.remove('on'); void elFlash.offsetWidth; elFlash.classList.add('on'); }
 function judge(forced){
@@ -546,7 +536,7 @@ function judge(forced){
   const comeback=tier==='perfect'&&S.justFailed;
   S.glasses++;
   switch(tier){
-    case 'perfect': S.combo=opener?Math.max(openerCombo(),comeback?comebackRestore(S.lostCombo||0):0):S.combo+1; S.perfects++; S.hitstop=0.13; S.shake=4; confetti(50); SFX.perfect(); buzz([20,30,20]); break;
+    case 'perfect': S.combo=opener?Math.max(openerCombo(),comeback?comebackRestore(S.lostCombo||0):0):S.combo+1; S.perfects++; S.hitstop=0.13; S.shake=4; confetti(50); SFX.perfect(); buzz([50,40,70]); break;
     case 'great': S.combo=opener?openerGreat():S.combo+1; confetti(16); SFX.great(); break;
     case 'good': if(opener) S.combo=1; SFX.good(); break;
     case 'miss': if(shielded){ shieldBurst(); SFX.great(); } else { S.lostCombo=S.combo; S.combo=0; SFX.miss(); } S.shake=3; break;
@@ -584,7 +574,7 @@ function judge(forced){
   if(tier==='perfect'||tier==='great') bump(elCombo);
   if(mb>1&&(tier==='perfect'||tier==='great')) { const el=[...document.querySelectorAll('.pop.bonus')].pop(); if(el&&lvl('chal')) el.textContent=`challenge x${mb.toFixed(2)} 🎲`; }
   const prestiged=S.combo>=100; if(prestiged) prestige();
-  if(!prestiged&&(tier==='perfect'||tier==='great')&&Math.floor(S.combo/10)>Math.floor(prevCombo/10)) schedule(0.55,spinSlot);
+  if(!prestiged&&(tier==='perfect'||tier==='great')&&Math.floor(S.combo/10)>Math.floor(prevCombo/10)){ S.pendingSlot=true; schedule(0.4,()=>toast(`x${S.combo} 🎰 slot glass incoming · hold to chug`)); }
   const nt=S.halo?TIERS.length-1:tierFor(S.combo), tierUp=nt>S.tier;
   if(!prestiged&&!opener&&MILESTONES[S.combo]&&(tier==='perfect'||tier==='great')) schedule(0.35,()=>{ popup(MILESTONES[S.combo],'milestone',-70); confetti(120); if(!tierUp) SFX.milestone(); });
   if(tierUp) schedule(0.3,()=>setTier(nt)); else if(nt<S.tier) setTier(nt); else if(prestiged) setTier(nt);
@@ -593,7 +583,37 @@ function judge(forced){
   S.phase='judged'; updateHUD();
   schedule(0.55,exitGlass);
 }
-function exitGlass(){ S.phase='exit'; S.draining=true; SFX.gulp(); g.anim={from:0,to:-W*0.9,start:S.time,dur:0.32,ease:easeInBack}; elMod.classList.remove('on'); schedule(0.3,()=>newGlass(false)); }
+function exitGlass(){ S.phase='exit'; S.draining=true; SFX.gulp(); g.anim={from:0,to:-W*0.9,start:S.time,dur:0.32,ease:easeInBack}; elMod.classList.remove('on'); schedule(0.3,()=>{ if(S.pendingSlot){ S.pendingSlot=false; newSlotGlass(); } else newGlass(false); }); }
+// ---------- slot glass: chug to reveal (every 10 combo) ----------
+const SLOT_H=[0.72,0.46,0.20], SLOT_REVEAL=[0.66,0.40,0.14];
+function newSlotGlass(){
+  S.draining=false; S.mod=null; S.golden=false;
+  g={hs:1,ws:1.05,x:W*0.8,anim:{from:W*0.8,to:0,start:S.time,dur:0.5,ease:easeOutBack}}; layoutGlass();
+  S.fill=1; S.phase='slot'; S.streamActive=false; S.targetAlpha=0; surf.y.fill(0); surf.v.fill(0); bubbles.length=0;
+  const total=PRIZES.reduce((a,p)=>a+p.w,0); let roll=Math.random()*total, prize=PRIZES[0]; for(const p of PRIZES){ if(roll<p.w){ prize=p; break; } roll-=p.w; }
+  const nothing=prize.e==='💀'; let syms; if(nothing){ const pool=PRIZES.filter(p=>p.e!=='💀'&&p.e!=='🎰').map(p=>p.e).sort(()=>Math.random()-0.5); syms=[pool[0],pool[1],'💀']; } else syms=[prize.e,prize.e,prize.e];
+  S.slot={prize,nothing,syms,revealed:[false,false,false],revealT:[0,0,0],hold:false,done:false};
+  elMod.innerHTML=`<b>🎰 slot glass</b><span class="mdesc">hold to chug. three symbols. one prize.</span><span class="bonus">x${S.combo} milestone</span>`; elMod.classList.add('on'); SFX.mod(); if(W<=640) toast('🎰 slot glass · hold to chug it down');
+}
+function finishSlot(){
+  const sl=S.slot, prize=sl.prize; sl.done=true; sl.hold=false; SFX.setPour(false);
+  const txt=(prize.alt&&lvl('shield')===0)?prize.alt:prize.t; prize.f();
+  if(prize.e==='🎰'){ popup('JACKPOT 🎰','back'); popup(txt,'bonus brim',80); flash(); confetti(220); S.shake=12; S.hitstop=0.25; SFX.soBack(); buzz([80,50,80,50,160]); }
+  else if(sl.nothing){ popup('nothing. lol. 💀','miss'); SFX.miss(); buzz(60); }
+  else { popup(prize.e+' '+txt,'great'); confetti(70); S.shake=5; SFX.buy(); buzz([60,40,60]); }
+  elMod.innerHTML=`<b>${prize.e} ${txt}</b>`; updateHUD(); const nt=S.halo?TIERS.length-1:tierFor(S.combo); if(nt>S.tier) setTier(nt); save();
+  schedule(1.1,exitGlass);
+}
+function drawSlotSymbols(front){
+  const sl=S.slot; if(!sl) return; const cx=gx(), sz=Math.round(clamp(g.tw*0.22,26,64));
+  if(!front) return;
+  for(let i=0;i<3;i++){ const y=g.bottomY-SLOT_H[i]*g.h, rev=sl.revealed[i];
+    ctx.save(); ctx.translate(cx,y); if(rev){ const k=Math.max(0,1-(S.time-sl.revealT[i])*3); ctx.scale(1+0.35*k,1+0.35*k); } else ctx.globalAlpha=0.4+0.15*Math.sin(S.time*4+i);
+    ctx.fillStyle=rev?'rgba(255,209,102,0.22)':'rgba(0,0,0,0.35)'; ctx.strokeStyle=rev?'#ffd166':'rgba(255,255,255,0.25)'; ctx.lineWidth=rev?3:2; ctx.beginPath(); ctx.roundRect(-sz*0.62,-sz*0.62,sz*1.24,sz*1.24,10); ctx.fill(); ctx.stroke();
+    if(rev){ const sp=sprite(sl.syms[i],sz); ctx.drawImage(sp,-sp.px/2,-sp.px/2,sp.px,sp.px); } else { ctx.fillStyle='rgba(255,255,255,0.45)'; ctx.font=`700 ${Math.round(sz*0.8)}px Fredoka,ui-rounded,sans-serif`; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('?',0,2); }
+    ctx.restore(); }
+  if(front){ ctx.save(); ctx.strokeStyle=rgba(col.glow,0.9); ctx.lineWidth=7; ctx.lineCap='round'; const wob=sl.hold?Math.sin(S.time*30)*2:0; ctx.beginPath(); ctx.moveTo(cx+g.tw*0.22+wob,g.bottomY-14); ctx.lineTo(cx+g.tw*0.34+wob,g.bottomY-g.h-56); ctx.stroke(); ctx.restore(); }
+}
 // ---------- milestone slots (every 10 combo) ----------
 const PRIZES=[
  {e:'🍋',w:28,t:'x2 aura on the next glass',f:()=>{S.nextMult=2;}},
@@ -605,24 +625,6 @@ const PRIZES=[
  {e:'💀',w:11,t:'nothing. lol.',f:()=>{}},
  {e:'🎰',w:4,t:'JACKPOT · x10 on the next glass',f:()=>{S.nextMult=10;}},
 ];
-const elSlot=$('#slot'),slotReels=[...document.querySelectorAll('#slot .reels span')],elSlotPrize=$('#slot .prize');
-let slotBusy=false;
-function spinSlot(){
-  if(slotBusy) return; slotBusy=true;
-  const total=PRIZES.reduce((a,p)=>a+p.w,0); let roll=Math.random()*total, prize=PRIZES[0]; for(const p of PRIZES){ if(roll<p.w){ prize=p; break; } roll-=p.w; }
-  const nothing=prize.e==='💀', pool=PRIZES.map(p=>p.e);
-  elSlot.hidden=false; elSlot.classList.remove('done','jackpot'); elSlotPrize.textContent='x'+S.combo+' · spin';
-  const stopAt=[550,850,1150], t0=performance.now(); let lastTick=0;
-  const tick=()=>{ const now=performance.now()-t0; let allStopped=true;
-    slotReels.forEach((r,i)=>{ if(now<stopAt[i]){ allStopped=false; if(now-lastTick>55){ r.textContent=pick(pool); } } else if(!r.dataset.set){ r.dataset.set=1; r.textContent=nothing?pool[(i*3+1)%pool.length]:prize.e; r.classList.add('stop'); SFX.tone(700+i*200,0.08,{vol:0.08,type:'triangle'}); } });
-    if(now-lastTick>55){ lastTick=now; if(!allStopped) SFX.tone(1400,0.03,{vol:0.025,type:'square'}); }
-    if(!allStopped) requestAnimationFrame(tick); else finish();
-  };
-  const finish=()=>{ const txt=(prize.alt&&lvl('shield')===0)?prize.alt:prize.t; prize.f(); elSlotPrize.textContent=txt; elSlot.classList.add('done'); if(prize.e==='🎰'){ elSlot.classList.add('jackpot'); flash(); confetti(200); S.shake=10; SFX.soBack(); } else if(nothing){ SFX.miss(); } else { SFX.buy(); confetti(50); }
-    updateHUD(); const nt=S.halo?TIERS.length-1:tierFor(S.combo); if(nt>S.tier) setTier(nt); save();
-    setTimeout(()=>{ elSlot.hidden=true; slotReels.forEach(r=>{ delete r.dataset.set; r.classList.remove('stop'); }); slotBusy=false; },1600); };
-  slotReels.forEach(r=>{ delete r.dataset.set; r.classList.remove('stop'); }); requestAnimationFrame(tick);
-}
 function shieldBurst(){ const cx=gx(),cy=g.bottomY-g.h/2; for(let i=0;i<40;i++){ const a=rand(0,Math.PI*2); parts.push({type:'conf',x:cx+Math.cos(a)*g.tw*0.9,y:cy+Math.sin(a)*g.h*0.7,vx:Math.cos(a)*rand(150,400),vy:Math.sin(a)*rand(150,400)-100,rot:a,vr:rand(-10,10),color:'#9be7ff',w:rand(6,12),h:3,life:rand(.6,1.1)}); } flash(); }
 function prestige(){
   S.bestCombo=Math.max(S.bestCombo,S.combo); S.prestige++; S.halo=true; S.combo=0; save(); updateHUD();
@@ -694,6 +696,7 @@ document.querySelectorAll('#shop .tab').forEach(b=>b.addEventListener('click',()
 const elQuality=$('#qualityBtn');
 function setQuality(q){ S.quality=q; S.lowQ=q==='low'; slowSince=0; S.frameEma=0.016; elQuality.textContent='graphics: '+q+(q==='auto'&&S.lowQ?' (low)':''); document.body.classList.toggle('lowq',S.lowQ); save(); }
 const elDbg=$('#dbg'); $('#dbgBtn').addEventListener('click',()=>{ elDbg.hidden=!elDbg.hidden; elDbg.textContent=debugText(); });
+$('#hapBtn').addEventListener('click',()=>{ let ok=false; try{ ok=!!(navigator.vibrate&&navigator.vibrate([80,60,80,60,160])); }catch(e){} toast(ok?'buzzed 📳 (3 pulses). felt nothing? check your phone\'s touch vibration setting':'this browser has no vibration api 📵 (iPhone, or desktop)'); });
 elQuality.addEventListener('click',()=>{ const order=['auto','high','low']; setQuality(order[(order.indexOf(S.quality)+1)%3]); SFX.click(); });
 if(IS_IOS&&!STANDALONE) $('#iosHint').classList.add('on');
 const IS_ANDROID=/Android/i.test(navigator.userAgent);
@@ -775,6 +778,9 @@ function update(dt){
   if(S.streamActive&&S.phase!=='pouring'){ const P=cupLip(),ly=levelY(); S.streamTopY+=((ly-P.y)/travelTime())*dt; if(S.streamTopY>=ly-1) S.streamActive=false; }
   if(S.phase==='releasing'&&!S.streamActive){ S.phase='settling'; schedule(0.32,()=>judge()); }
   if(S.draining) S.fill=Math.max(0,S.fill-3.5*dt);
+  if(S.phase==='slot'&&S.slot&&S.slot.hold&&!S.slot.done){ const sl=S.slot; S.fill=Math.max(0.08,S.fill-0.72*dt); SFX.setPour(true,1-S.fill,0.5);
+    if(Math.random()<0.7) bubbles.push({ox:g.tw*0.24+rand(-6,6),y:g.bottomY-rand(6,20),vy:-rand(60,120),r:rand(1.5,3.5),life:rand(.6,1.2)});
+    for(let i=0;i<3;i++) if(!sl.revealed[i]&&S.fill<SLOT_REVEAL[i]){ sl.revealed[i]=true; sl.revealT[i]=S.time; buzz(45); SFX.tone(620+i*260,0.22,{vol:0.14,type:'triangle'}); SFX.tone((620+i*260)*2,0.3,{vol:0.05}); for(let k=0;k<10;k++) parts.push({type:'conf',x:gx()+rand(-20,20),y:g.bottomY-SLOT_H[i]*g.h,vx:rand(-200,200),vy:rand(-300,-80),rot:0,vr:rand(-8,8),color:'#ffd166',w:6,h:4,life:rand(.5,.9)}); if(i===2) schedule(0.35,finishSlot); } }
   if(S.mod==='leaky'&&S.fill>0&&(S.phase==='pouring'||S.phase==='releasing'||S.phase==='settling'||S.phase==='idle')){ S.fill=Math.max(0,S.fill-0.06*dt); if(Math.random()<0.4) parts.push({type:'drop',x:gx()+g.bw*0.3,y:g.bottomY+2,vx:rand(-5,5),vy:rand(20,60),life:rand(.5,.9),size:rand(1.5,2.5)}); }
   if(hasFx('fizz')&&S.fill>0.06&&S.mod!=='blackout'&&Math.random()<(S.tier>=5?0.6:0.35)) bubbles.push({ox:rand(-1,1)*halfW(g.bottomY-10)*0.85,y:g.bottomY-rand(4,14),vy:-rand(25,65),r:rand(1,3),life:rand(1,3)});
   updateSurface(dt);
@@ -826,6 +832,7 @@ function drawWater(){
   if(dark){ ctx.fillStyle='rgba(255,255,255,0.03)'; ctx.fill(); ctx.restore(); return; }
   const rich=Math.min(0.3,lvl('hydra')*0.01); let wc=lerpC(col.water,[255,225,150],rich), dc=lerpC(col.deep,[220,160,60],rich);
   const fl=SKINS.flavor.find(f=>f.id===S.eq.flavor); if(fl&&fl.tint){ const tc=hex(fl.tint); wc=lerpC(wc,tc,0.82); dc=lerpC(dc,tc.map(v=>v*0.62),0.82); }
+  if(S.phase==='slot'){ wc=lerpC(wc,[255,215,110],0.92); dc=lerpC(dc,[214,150,30],0.92); }
   const grd=ctx.createLinearGradient(0,ly,0,g.bottomY); grd.addColorStop(0,rgba(wc,0.88)); grd.addColorStop(1,rgba(dc,0.96)); ctx.fillStyle=grd; ctx.fill();
   if(hasFx('aurora')&&!S.lowQ){ const ag=ctx.createLinearGradient(x0,0,x1,0); for(let i=0;i<=4;i++) ag.addColorStop(i/4,`hsla(${(S.time*40+i*70)%360},100%,70%,0.45)`); ctx.fillStyle=ag; ctx.beginPath(); surfacePath(x0,x1,ly); ctx.lineTo(x1,ly+34*hi); ctx.lineTo(x0,ly+34*hi); ctx.closePath(); ctx.fill(); }
   for(const b of bubbles){ ctx.beginPath(); ctx.arc(cx+b.ox,b.y,b.r,0,Math.PI*2); ctx.fillStyle='rgba(255,255,255,0.35)'; ctx.fill(); }
@@ -914,7 +921,8 @@ function drawParticles(){
 function draw(){
   drawBG();
   ctx.save(); if(S.shake>0.1&&!REDUCED) ctx.translate(rand(-S.shake,S.shake),rand(-S.shake,S.shake));
-  if(g){ drawGlassBack(); drawWater(); drawGlassFront(); drawTarget(); drawStream(); drawCup(); drawShield(); }
+  if(g&&S.phase==='slot'){ drawGlassBack(); drawSlotSymbols(false); drawWater(); drawGlassFront(); drawSlotSymbols(true); drawCup(); }
+  else if(g){ drawGlassBack(); drawWater(); drawGlassFront(); drawTarget(); drawStream(); drawCup(); drawShield(); }
   drawParticles();
   ctx.restore();
 }
