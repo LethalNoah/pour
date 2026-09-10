@@ -87,6 +87,9 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none;background:#06091
 .card .em{font-size:30px}.card .nm{font-size:13px;font-weight:600}.card .pr{font-size:12px;opacity:.75}
 .card.owned .pr{color:#b8ffcf}.card.eq{border-color:#ffd166;background:rgba(255,209,102,.12)}.card.eq .pr{color:#ffd166}
 .card.poor{opacity:.55}.card.poor .pr{color:#ff9c9c}
+.card.pres{border-color:rgba(255,209,102,.35);background:linear-gradient(160deg,rgba(255,209,102,.1),rgba(255,120,180,.06))}
+.card.plock{opacity:.5}.card.plock .pr{color:#ffd166}.card .nm small{color:#ffd166;font-size:10px}
+.card.badge{cursor:default}.card.badge .pr{font-size:11px;opacity:.7;white-space:normal}.card.badge:not(.owned){opacity:.55}.card.badge:hover{transform:none}
 #shop .fine{font-size:11px;opacity:.45;text-align:center;margin-top:12px;letter-spacing:.04em}
 #shop .tabs{display:flex;gap:6px;margin:4px 0 10px}
 #shop .tab{flex:1;background:rgba(255,255,255,.06);border:2px solid rgba(255,255,255,.1);color:#fff;font-family:inherit;font-weight:700;font-size:14px;padding:10px;border-radius:12px;cursor:pointer}
@@ -134,6 +137,13 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none;background:#06091
 .pop.bonus{font-size:22px;font-weight:700;color:#ffd166;animation-delay:.2s,1.05s}
 .pop.back{font-size:clamp(56px,9vw,100px);background:linear-gradient(90deg,#fff,#ffe36e,#ff5c3a,#ff2d9a,#ffe36e,#fff);background-size:300% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 4px rgba(0,0,0,.8)) drop-shadow(0 0 30px rgba(255,120,40,.9));animation:popIn .55s cubic-bezier(.17,2,.4,1) forwards,popOut .5s ease-in 1.7s forwards,shimmer .5s linear infinite,backShake .6s ease-in-out .15s}
 @keyframes backShake{0%,100%{margin-left:0}20%{margin-left:-14px}40%{margin-left:12px}60%{margin-left:-8px}80%{margin-left:6px}}
+#don{position:absolute;left:50%;bottom:calc(max(16px,env(safe-area-inset-bottom)) + 190px);transform:translateX(-50%);pointer-events:auto;background:linear-gradient(135deg,rgba(255,77,109,.55),rgba(255,209,102,.5));border:2px solid rgba(255,255,255,.55);color:#fff;font-family:inherit;padding:10px 22px 12px;border-radius:999px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:1px;box-shadow:0 10px 34px rgba(0,0,0,.4),0 0 30px rgba(255,120,120,.45);animation:popIn .45s cubic-bezier(.17,1.8,.4,1),donPulse .7s ease-in-out infinite .45s;overflow:hidden;z-index:2}
+#don[hidden]{display:none}
+#don b{font-size:clamp(17px,2.4vw,22px);font-weight:700;letter-spacing:.02em}
+#don span{font-size:11px;letter-spacing:.16em;text-transform:uppercase;opacity:.8}
+#don i{position:absolute;left:0;bottom:0;height:4px;width:var(--left,100%);background:#fff;opacity:.8}
+@keyframes donPulse{50%{transform:translateX(-50%) scale(1.06)}}
+@media (max-width:640px){#don{bottom:calc(max(14px,env(safe-area-inset-bottom)) + 200px)}}
 #flash{position:fixed;inset:0;background:radial-gradient(circle at 50% 45%,#fff,#ffe9b0 40%,rgba(255,150,60,.6) 70%,transparent);opacity:0;pointer-events:none;z-index:15}
 #flash.on{animation:flashAnim .8s ease-out forwards}
 @keyframes flashAnim{0%{opacity:.95}100%{opacity:0}}
@@ -182,6 +192,7 @@ body.lowq #shopBtn.can::before{animation:none}
   <div id="toast"></div>
   <div id="hint">hold anywhere to pour · let go at the line</div>
   <div id="stats"></div>
+  <button id="don" hidden><b>double it 🎲</b><span>or nothing</span><i></i></button>
   <button id="mute" title="mute (m)">🔊</button>
   <button id="shopBtn">🛍️ shop</button>
 </div>
@@ -189,7 +200,7 @@ body.lowq #shopBtn.can::before{animation:none}
 <div id="shop" hidden>
   <div class="panel">
     <div class="head"><span>aura shop 🛍️</span><span id="shopAura">0 ✨</span><button id="shopClose">✕</button></div>
-    <div class="tabs"><button class="tab on" data-tab="upgrades">⬆️ upgrades</button><button class="tab" data-tab="style">✨ style</button></div>
+    <div class="tabs"><button class="tab on" data-tab="upgrades">⬆️ upgrades</button><button class="tab" data-tab="style">✨ style</button><button class="tab" data-tab="badges">🏅 badges</button></div>
     <div id="shopBody"></div>
     <p class="fine">every item you own boosts your aura, equipped or not. water effects stack. spending never touches your combo. no refunds. no cap.</p>
     <div class="foot"><button id="installBtn2" hidden>📲 install as an app</button><button id="qualityBtn">graphics: auto</button><button id="resetBtn">reset aura &amp; items</button><button id="wipeBtn">🧪 dev: wipe everything</button><button id="dbgBtn">🐛 debug</button><button id="hapBtn">📳 test haptics</button></div>
@@ -210,7 +221,7 @@ body.lowq #shopBtn.can::before{animation:none}
 <audio id="unlock" loop playsinline preload="auto" src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA="></audio>
 <script>
 'use strict';
-const VERSION='1.5.0';
+const VERSION='1.6.0';
 const $=s=>document.querySelector(s);
 const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const IS_IOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
@@ -279,6 +290,8 @@ const SKINS={
   {id:'goblet',name:'goblet',emoji:'🍷',price:25000000,mult:0.20,bw:0.5,hs:0.85,ws:1.2},
   {id:'trophy',name:'trophy',emoji:'🏆',price:60000000,mult:0.30,bw:0.6,hs:1,ws:1.1},
   {id:'crystal',name:'crystal',emoji:'🔮',price:150000000,mult:0.45,bw:0.7,hs:1.05,ws:1},
+  {id:'haloglass',name:'halo glass',emoji:'😇',price:5000000,mult:0.5,bw:0.74,hs:1.05,ws:1,preq:1},
+  {id:'voidglass',name:'void chalice',emoji:'🕳️',price:50000000,mult:0.8,bw:0.5,hs:0.9,ws:1.2,preq:3},
  ],
  water:[
   {id:'neon',name:'neon glow',emoji:'💡',price:2000000,mult:0.05},
@@ -286,6 +299,7 @@ const SKINS={
   {id:'glitter',name:'glitter',emoji:'✨',price:6000000,mult:0.08},
   {id:'rainbow',name:'rainbow surface',emoji:'🌈',price:15000000,mult:0.12},
   {id:'aurora',name:'aurora',emoji:'🌌',price:40000000,mult:0.18},
+  {id:'starlight',name:'starlight',emoji:'🌟',price:100000000,mult:0.5,preq:5},
  ],
  cup:[
   {id:'classic',name:'classic tumbler',emoji:'🥤',price:0,mult:0,stroke:'rgba(255,255,255,0.75)',fill:'rgba(255,255,255,0.10)'},
@@ -293,6 +307,8 @@ const SKINS={
   {id:'obsidian',name:'obsidian',emoji:'🖤',price:5000000,mult:0.10,stroke:'#2a2a3a',fill:'rgba(0,0,0,0.6)'},
   {id:'gold',name:'golden chalice',emoji:'👑',price:20000000,mult:0.20,stroke:'#ffd166',fill:'rgba(255,209,102,0.25)',glow:'#ffd166'},
   {id:'diamond',name:'diamond',emoji:'💎',price:75000000,mult:0.30,stroke:'#b8f6ff',fill:'rgba(184,246,255,0.28)',glow:'#7ae8ff',sparkle:true},
+  {id:'angel',name:'angel tumbler',emoji:'😇',price:8000000,mult:0.4,stroke:'#fff8e0',fill:'rgba(255,248,224,0.3)',glow:'#ffd166',halo:true,preq:1},
+  {id:'crown',name:'crown tumbler',emoji:'👑',price:60000000,mult:0.7,stroke:'#ffd166',fill:'rgba(255,209,102,0.35)',glow:'#ffffff',sparkle:true,crown:true,preq:3},
  ],
  flavor:[
   {id:'none',name:'plain water',emoji:'💧',price:0,mult:0},
@@ -303,6 +319,9 @@ const SKINS={
   {id:'cola',name:'cola',emoji:'🥤',price:150000,mult:0.03,tint:'#5a2a12'},
   {id:'milk',name:'oat milk',emoji:'🥛',price:250000,mult:0.03,tint:'#f5f0e6'},
   {id:'void',name:'void juice',emoji:'🕳️',price:400000,mult:0.04,tint:'#0a0a14'},
+  {id:'nectar',name:'nectar',emoji:'🍯',price:2000000,mult:0.1,tint:'#f4b942',preq:1},
+  {id:'liquidgold',name:'liquid gold',emoji:'🏆',price:20000000,mult:0.3,tint:'#ffd166',preq:2},
+  {id:'nebula',name:'nebula',emoji:'🌌',price:15000000,mult:0.2,tint:'#7b2cbf',preq:3},
  ],
  charm:[
   {id:'none',name:'no charm',emoji:'✖️',price:0,mult:0},
@@ -314,14 +333,54 @@ const SKINS={
   {id:'pearls',name:'boba pearls',emoji:'🧋',price:200000,mult:0.03,pearls:true},
   {id:'ghost',name:'ghost',emoji:'👻',price:300000,mult:0.04,char:'👻',hover:true},
   {id:'dice',name:'lucky dice',emoji:'🎲',price:400000,mult:0.05,char:'🎲'},
+  {id:'crown',name:'crown',emoji:'👑',price:3000000,mult:0.2,char:'👑',preq:1},
+  {id:'trophy',name:'lil trophy',emoji:'🏆',price:10000000,mult:0.3,char:'🏆',preq:2},
+  {id:'star',name:'star',emoji:'🌟',price:40000000,mult:0.5,char:'🌟',hover:true,preq:4},
  ],
  confetti:[
   {id:'rect',name:'classic confetti',emoji:'🎊',price:0,mult:0},
   {id:'emoji',name:'emoji confetti',emoji:'😭',price:2500000,mult:0.05,chars:['😭','🔥','💀','✨','🗣️','💯']},
   {id:'money',name:'money rain',emoji:'💸',price:8000000,mult:0.10,chars:['💸','💵','🤑']},
   {id:'fireworks',name:'fireworks',emoji:'🎆',price:30000000,mult:0.15,streak:true},
+  {id:'stardust',name:'stardust',emoji:'💫',price:25000000,mult:0.3,chars:['✨','⭐','💫'],preq:2},
  ],
 };
+// ---------- achievements ----------
+const ACH=[
+ {id:'first',name:'first pour',emoji:'🫗',desc:'pour a glass',reward:500,ok:()=>S.glasses>=1},
+ {id:'perfect1',name:'no cap',emoji:'✅',desc:'land a perfect',reward:1000,ok:()=>S.perfects>=1},
+ {id:'perfect10',name:'hydration check',emoji:'💧',desc:'10 perfects',reward:5000,ok:()=>S.perfects>=10},
+ {id:'perfect100',name:'certified',emoji:'📜',desc:'100 perfects',reward:50000,ok:()=>S.perfects>=100},
+ {id:'combo10',name:'on fire',emoji:'🔥',desc:'reach a x10 combo',reward:10000,ok:()=>S.bestCombo>=10},
+ {id:'combo25',name:'touch grass fr',emoji:'🌱',desc:'reach a x25 combo',reward:25000,ok:()=>S.bestCombo>=25},
+ {id:'combo50',name:'god tier',emoji:'⚡',desc:'reach a x50 combo',reward:100000,ok:()=>S.bestCombo>=50},
+ {id:'prestige1',name:'you are the water',emoji:'💧',desc:'prestige once',reward:500000,ok:()=>S.prestige>=1},
+ {id:'prestige3',name:'the cycle continues',emoji:'★',desc:'prestige 3 times',reward:2000000,ok:()=>S.prestige>=3},
+ {id:'brim1',name:'brim baby',emoji:'🧢',desc:'perfect a brim pour',reward:10000,ok:()=>S.stats.brims>=1},
+ {id:'brim10',name:'surface tension god',emoji:'🫧',desc:'10 brim pours',reward:100000,ok:()=>S.stats.brims>=10},
+ {id:'back1',name:"we're so back",emoji:'🗣️',desc:'land a comeback',reward:10000,ok:()=>S.stats.comebacks>=1},
+ {id:'back10',name:'redemption arc',emoji:'📈',desc:'10 comebacks',reward:100000,ok:()=>S.stats.comebacks>=10},
+ {id:'gold1',name:'golden touch',emoji:'✨',desc:'hit a golden glass',reward:20000,ok:()=>S.stats.goldens>=1},
+ {id:'gold10',name:'midas',emoji:'👑',desc:'10 golden glasses',reward:200000,ok:()=>S.stats.goldens>=10},
+ {id:'chal10',name:'challenger',emoji:'🎲',desc:'beat 10 challenges',reward:20000,ok:()=>S.stats.chalWins>=10},
+ {id:'double',name:'double trouble',emoji:'⚡',desc:'beat a double challenge',reward:50000,ok:()=>S.stats.doubles>=1},
+ {id:'triple',name:'triple threat',emoji:'⚡',desc:'beat a triple challenge',reward:250000,ok:()=>S.stats.triples>=1},
+ {id:'slot1',name:'chug life',emoji:'🧋',desc:'chug a slot glass',reward:10000,ok:()=>S.stats.slots>=1},
+ {id:'jackpot',name:'jackpot',emoji:'🎰',desc:'hit the slot jackpot',reward:300000,ok:()=>S.stats.jackpots>=1},
+ {id:'don1',name:'gambler',emoji:'🎲',desc:'win a double or nothing',reward:25000,ok:()=>S.stats.donW>=1},
+ {id:'don10',name:'high roller',emoji:'💸',desc:'win 10 double or nothings',reward:250000,ok:()=>S.stats.donW>=10},
+ {id:'donl5',name:'degenerate',emoji:'💀',desc:'lose 5 double or nothings',reward:50000,ok:()=>S.stats.donL>=5},
+ {id:'shield',name:'shield wall',emoji:'🛡️',desc:'a shield absorbs a fail',reward:30000,ok:()=>S.stats.shielded>=1},
+ {id:'collect10',name:'collector',emoji:'🧺',desc:'own 10 cosmetics',reward:200000,ok:()=>S.owned.size>=10},
+ {id:'flavors',name:'drip',emoji:'🍹',desc:'own every basic flavor',reward:500000,ok:()=>SKINS.flavor.filter(f=>f.price&&!f.preq).every(f=>S.owned.has('flavor:'+f.id))},
+ {id:'upg25',name:'upgraded',emoji:'⬆️',desc:'25 total upgrade levels',reward:300000,ok:()=>totalLvl()>=25},
+ {id:'maxed',name:'maxed',emoji:'🏁',desc:'max out any upgrade',reward:500000,ok:()=>UPG.some(u=>lvl(u.id)>=u.max)},
+ {id:'glasses500',name:'the grind',emoji:'⏳',desc:'pour 500 glasses',reward:200000,ok:()=>S.glasses>=500},
+ {id:'glasses2000',name:'unemployed behavior',emoji:'🛋️',desc:'pour 2000 glasses',reward:1000000,ok:()=>S.glasses>=2000},
+ {id:'whale',name:'whale',emoji:'🐳',desc:'bank 10M aura at once',reward:1000000,ok:()=>S.aura>=10000000},
+];
+let achQueue=0;
+function checkAch(){ for(const a of ACH){ if(S.ach.includes(a.id)) continue; let ok=false; try{ ok=a.ok(); }catch(e){} if(!ok) continue; S.ach.push(a.id); S.aura+=a.reward; const delay=0.9+achQueue*1.3; achQueue++; schedule(delay,()=>{ popup(`🏅 ${a.name}`,'milestone',-90); toast(`achievement: ${a.emoji} ${a.name} · +${fmtShort(a.reward)} aura`); SFX.buy(); confetti(60); buzz([40,30,40]); achQueue=Math.max(0,achQueue-1); updateHUD(); }); } save(); }
 const fmtShort=n=>n>=1e9?(n/1e9).toFixed(n%1e9?2:0).replace(/\.?0+$/,'')+'B':n>=1e6?(n/1e6).toFixed(n%1e6?1:0).replace(/\.0$/,'')+'M':n>=1e4?Math.round(n/1e3)+'k':fmt(n);
 const CAT_NAMES={flavor:'flavor · tints the water',charm:'charm · floats in the glass',glass:'glass',water:'water effects · these stack',cup:'pourer',confetti:'confetti'};
 const CATS=['flavor','charm','glass','water','cup','confetti'];
@@ -369,7 +428,7 @@ const auraMult=()=>itemMult()*(1+0.25*S.prestige)*(S.halo?haloMult():1)*(1+0.15*
 const canAffordAnyUpg=()=>UPG.some(u=>lvl(u.id)<u.max&&!upgReq(u)&&S.aura>=upgCost(u));
 // emoji sprite cache: fillText per particle per frame is what made emoji confetti lag.
 const spriteCache={};
-function sprite(ch,size){ const k=ch+size; if(spriteCache[k]) return spriteCache[k]; const c=document.createElement('canvas'); const px=size*1.5; c.width=c.height=Math.ceil(px*(devicePixelRatio||1)); const x=c.getContext('2d'); x.scale(devicePixelRatio||1,devicePixelRatio||1); x.font=`${size}px sans-serif`; x.textAlign='center'; x.textBaseline='middle'; x.fillText(ch,px/2,px/2+size*0.05); c.px=px; spriteCache[k]=c; return c; }
+function sprite(ch,size){ size=Math.max(8,size||8); const k=ch+size; if(spriteCache[k]) return spriteCache[k]; const c=document.createElement('canvas'); const px=size*1.5; c.width=c.height=Math.max(1,Math.ceil(px*(devicePixelRatio||1))); const x=c.getContext('2d'); x.scale(devicePixelRatio||1,devicePixelRatio||1); x.font=`${size}px sans-serif`; x.textAlign='center'; x.textBaseline='middle'; x.fillText(ch,px/2,px/2+size*0.05); c.px=px; spriteCache[k]=c; return c; }
 // challenge modifiers. bonus = aura multiplier for beating the glass with it on.
 const MODS=[
  {id:'shot',label:'shot glass 🥃',desc:'tiny. fast. no room for error.',bonus:1.5},
@@ -461,7 +520,7 @@ const SFX={
 
 // ---------- state ----------
 let W=0,H=0;
-const S={screen:'title',phase:'idle',fill:0,target:.6,combo:0,aura:0,dispAura:0,bestCombo:0,glasses:0,perfects:0,tier:0,arpLast:0,arpI:0,colSpeed:2,owned:new Set(),eq:{glass:'classic',cup:'classic',confetti:'rect',flavor:'none',charm:'none'},fx:[],golden:false,mods:[],prestige:0,halo:false,driftT:0,upg:{},shieldReady:false,shieldCd:0,shopTab:'upgrades',quality:'auto',lowQ:false,frameEma:0.016,shopOpen:false,mod:null,time:0,shake:0,hitstop:0,pourT:0,justFailed:false,streamActive:false,streamTopY:0,targetAlpha:1,cupTilt:0,cupY:200,draining:false,fanumDone:false,fanumAt:0};
+const S={screen:'title',phase:'idle',fill:0,target:.6,combo:0,aura:0,dispAura:0,bestCombo:0,glasses:0,perfects:0,tier:0,arpLast:0,arpI:0,colSpeed:2,owned:new Set(),eq:{glass:'classic',cup:'classic',confetti:'rect',flavor:'none',charm:'none'},fx:[],golden:false,mods:[],ach:[],stats:{brims:0,goldens:0,chalWins:0,doubles:0,triples:0,slots:0,jackpots:0,donW:0,donL:0,shielded:0,comebacks:0},donPts:0,donUntil:0,prestige:0,halo:false,driftT:0,upg:{},shieldReady:false,shieldCd:0,shopTab:'upgrades',quality:'auto',lowQ:false,frameEma:0.016,shopOpen:false,mod:null,time:0,shake:0,hitstop:0,pourT:0,justFailed:false,streamActive:false,streamTopY:0,targetAlpha:1,cupTilt:0,cupY:200,draining:false,fanumDone:false,fanumAt:0};
 const col={bg0:TIERS[0].bg0.slice(),bg1:TIERS[0].bg1.slice(),water:TIERS[0].water.slice(),deep:TIERS[0].deep.slice(),glow:TIERS[0].glow.slice()};
 let g=null; const parts=[],bubbles=[],timers=[];
 const N=48,surf={y:new Float32Array(N),v:new Float32Array(N)};
@@ -498,9 +557,9 @@ const travelTime=()=>0.11;
 
 // ---------- save ----------
 const SAVE_V=2; // bumping this wipes aura + items on next load (economy rebalance) but keeps prestige, best combo and stats
-function load(){ try{ const d=JSON.parse(localStorage.getItem('pour_save')||'null'); if(d&&d.v!==SAVE_V){ d.aura=0; d.owned=[]; d.eq=null; d.fx=[]; d.halo=false; setTimeout(()=>toast('economy rebalanced: aura + items reset. prestige kept ★'),1500); } if(d){ S.aura=d.aura||0; S.dispAura=S.aura; S.bestCombo=d.best||0; S.glasses=d.glasses||0; S.perfects=d.perfects||0; S.owned=new Set(d.owned||[]); const eq=d.eq||{}; for(const k of ['glass','cup','confetti','flavor','charm']) if(eq[k]) S.eq[k]=eq[k]; S.fx=(d.fx||[]).filter(id=>SKINS.water.some(w=>w.id===id)); S.prestige=d.prestige||0; S.halo=!!d.halo; S.quality=d.quality||'auto'; S.lowQ=S.quality==='low'; S.upg=d.upg||{}; S.shieldReady=!!d.shieldReady; S.shieldCd=d.shieldCd||0; } else S.bestCombo=+localStorage.getItem('pour_best')||0; }catch(e){} }
-function resetProgress(){ S.aura=0; S.dispAura=0; S.owned=new Set(); S.eq={glass:'classic',cup:'classic',confetti:'rect',flavor:'none',charm:'none'}; S.fx=[]; S.halo=false; S.upg={}; S.shieldReady=false; S.shieldCd=0; if(g) layoutGlass(); save(); renderShop(); updateHUD(); toast('aura + items wiped. fresh start 🫗'); SFX.deny(); }
-function save(){ try{ localStorage.setItem('pour_save',JSON.stringify({v:SAVE_V,aura:S.aura,best:S.bestCombo,glasses:S.glasses,perfects:S.perfects,owned:[...S.owned],eq:S.eq,fx:S.fx,prestige:S.prestige,halo:S.halo,quality:S.quality,upg:S.upg,shieldReady:S.shieldReady,shieldCd:S.shieldCd})); }catch(e){} }
+function load(){ try{ const d=JSON.parse(localStorage.getItem('pour_save')||'null'); if(d&&d.v!==SAVE_V){ d.aura=0; d.owned=[]; d.eq=null; d.fx=[]; d.halo=false; setTimeout(()=>toast('economy rebalanced: aura + items reset. prestige kept ★'),1500); } if(d){ S.aura=d.aura||0; S.dispAura=S.aura; S.bestCombo=d.best||0; S.glasses=d.glasses||0; S.perfects=d.perfects||0; S.owned=new Set(d.owned||[]); const eq=d.eq||{}; for(const k of ['glass','cup','confetti','flavor','charm']) if(eq[k]) S.eq[k]=eq[k]; S.fx=(d.fx||[]).filter(id=>SKINS.water.some(w=>w.id===id)); S.prestige=d.prestige||0; S.halo=!!d.halo; S.quality=d.quality||'auto'; S.lowQ=S.quality==='low'; S.upg=d.upg||{}; S.shieldReady=!!d.shieldReady; S.shieldCd=d.shieldCd||0; S.ach=d.ach||[]; Object.assign(S.stats,d.stats||{}); } else S.bestCombo=+localStorage.getItem('pour_best')||0; }catch(e){} }
+function resetProgress(){ S.aura=0; S.dispAura=0; S.owned=new Set(); S.eq={glass:'classic',cup:'classic',confetti:'rect',flavor:'none',charm:'none'}; S.fx=[]; S.halo=false; S.upg={}; S.shieldReady=false; S.shieldCd=0; S.ach=[]; for(const k in S.stats) S.stats[k]=0; if(g) layoutGlass(); save(); renderShop(); updateHUD(); toast('aura + items wiped. fresh start 🫗'); SFX.deny(); }
+function save(){ try{ localStorage.setItem('pour_save',JSON.stringify({v:SAVE_V,aura:S.aura,best:S.bestCombo,glasses:S.glasses,perfects:S.perfects,owned:[...S.owned],eq:S.eq,fx:S.fx,prestige:S.prestige,halo:S.halo,quality:S.quality,upg:S.upg,shieldReady:S.shieldReady,shieldCd:S.shieldCd,ach:S.ach,stats:S.stats})); }catch(e){} }
 addEventListener('pagehide',save); document.addEventListener('visibilitychange',()=>{ if(document.hidden) save(); else SFX.resume(); });
 document.addEventListener('touchend',()=>SFX.resume(),{passive:true});
 
@@ -551,7 +610,7 @@ function judge(forced){
   let lost=tier==='miss'||tier==='over';
   // spill shield: absorbs one fail, keeps combo + halo, then recharges over clean glasses
   const shielded=lost&&S.shieldReady;
-  if(shielded){ S.shieldReady=false; S.shieldCd=shieldRecharge(); lost=false; }
+  if(shielded){ S.shieldReady=false; S.shieldCd=shieldRecharge(); lost=false; S.stats.shielded++; }
   else if(!lost&&lvl('shield')>0&&!S.shieldReady){ S.shieldCd--; if(S.shieldCd<=0){ S.shieldReady=true; schedule(0.9,()=>{ toast('spill shield ready 🛡️'); SFX.click(); buzz(40); }); } }
   const comeback=tier==='perfect'&&S.justFailed;
   S.glasses++;
@@ -568,7 +627,11 @@ function judge(forced){
   if(comeback&&S.combo>openerCombo()) schedule(0.9,()=>toast(`redemption: restored to x${S.combo} 📈`));
   if(lost&&hasMod('jackpot')){ const tax=Math.floor(S.aura*0.05); pts-=tax; schedule(0.25,()=>popup(`jackpot tax -${fmt(tax)} 🎰`,'pts neg',110)); }
   if(gold>1){ confetti(80); S.shake=Math.max(S.shake,8); schedule(0.15,()=>popup('GOLDEN x5 ✨','bonus brim',-96)); }
-  if(brim>1){ confetti(60); S.shake=Math.max(S.shake,6); }
+  if(brim>1){ confetti(60); S.shake=Math.max(S.shake,6); S.stats.brims++; }
+  if(gold>1) S.stats.goldens++; if(comeback) S.stats.comebacks++;
+  if(mb>1&&(tier==='perfect'||tier==='great')){ S.stats.chalWins++; if(S.mods.length===2) S.stats.doubles++; if(S.mods.length>=3) S.stats.triples++; }
+  // double or nothing window: any paying hit opens a ~2.2s gamble on that payout
+  if(pts>0&&(tier==='perfect'||tier==='great')&&S.combo<100){ S.donPts=pts; S.donUntil=S.time+2.3; S.donResolved=false; }
   // opener hype: the first glass of a run is always a moment
   if(opener&&tier==='perfect'){ S.hitstop=0.3; S.shake=11; confetti(150); flash(); SFX.opener(); }
   else if(opener&&tier==='great'){ S.hitstop=0.2; S.shake=7; confetti(90); flash(); SFX.opener(); }
@@ -595,6 +658,7 @@ function judge(forced){
   if(mb>1&&(tier==='perfect'||tier==='great')) { const el=[...document.querySelectorAll('.pop.bonus')].pop(); if(el&&(lvl('chal')||S.mods.length>1)) el.textContent=`${S.mods.length>1?S.mods.length+'x challenge':'challenge'} x${mb.toFixed(2).replace(/\.?0+$/,'')} ${S.mods.length>1?'⚡':'🎲'}`; }
   const prestiged=S.combo>=100; if(prestiged) prestige();
   if(!prestiged&&(tier==='perfect'||tier==='great')&&Math.floor(S.combo/10)>Math.floor(prevCombo/10)){ S.pendingSlot=true; schedule(0.4,()=>toast(`x${S.combo} 🎰 slot glass incoming · hold to chug`)); }
+  schedule(0.3,checkAch);
   const nt=S.halo?TIERS.length-1:tierFor(S.combo), tierUp=nt>S.tier;
   if(!prestiged&&!opener&&MILESTONES[S.combo]&&(tier==='perfect'||tier==='great')) schedule(0.35,()=>{ popup(MILESTONES[S.combo],'milestone',-70); confetti(120); if(!tierUp) SFX.milestone(); });
   if(tierUp) schedule(0.3,()=>setTier(nt)); else if(nt<S.tier) setTier(nt); else if(prestiged) setTier(nt);
@@ -617,7 +681,7 @@ function newSlotGlass(){
 }
 function finishSlot(){
   const sl=S.slot, prize=sl.prize; sl.done=true; sl.hold=false; SFX.setPour(false);
-  const txt=(prize.alt&&lvl('shield')===0)?prize.alt:prize.t; prize.f();
+  const txt=(prize.alt&&lvl('shield')===0)?prize.alt:prize.t; prize.f(); S.stats.slots++; if(prize.e==='🎰') S.stats.jackpots++; schedule(1.5,checkAch);
   if(prize.e==='🎰'){ popup('JACKPOT 🎰','back'); popup(txt,'bonus brim',80); flash(); confetti(220); S.shake=12; S.hitstop=0.25; SFX.soBack(); buzz([80,50,80,50,160]); }
   else if(sl.nothing){ popup('nothing. lol. 💀','miss'); SFX.miss(); buzz(60); }
   else { popup(prize.e+' '+txt,'great'); confetti(70); S.shake=5; SFX.buy(); buzz([60,40,60]); }
@@ -649,8 +713,15 @@ function shieldBurst(){ const cx=gx(),cy=g.bottomY-g.h/2; for(let i=0;i<40;i++){
 function prestige(){
   S.bestCombo=Math.max(S.bestCombo,S.combo); S.prestige++; S.halo=true; S.combo=0; save(); updateHUD();
   schedule(0.45,()=>{ popup(pick(PHR.prestige).replace('★','★'+S.prestige),'back'); popup(`+25% aura forever · halo x${haloMult().toFixed(2)} until you lose`,'bonus',80); flash(); confetti(260); S.shake=14; S.hitstop=0.35; SFX.prestige(); });
-  schedule(1.4,()=>toast(`prestige ${S.prestige} ★ · combo reset · halo active ✨`));
+  schedule(1.4,()=>toast(`prestige ${S.prestige} ★ · combo reset · halo active ✨`)); schedule(2.5,checkAch);
 }
+// ---------- double or nothing ----------
+const elDon=$('#don');
+function resolveDon(){ if(S.donResolved||S.time>=S.donUntil) return; S.donResolved=true; elDon.hidden=true; const win=Math.random()<0.5, p=S.donPts;
+  if(win){ S.aura+=p; S.stats.donW++; popup(`DOUBLED +${fmt(p)} 🎲`,'back small'); confetti(90); S.shake=7; flash(); SFX.buy(); SFX.tone(PENT[7]*2,0.8,{vol:0.12,delay:0.1}); buzz([50,40,90]); }
+  else { S.aura=Math.max(0,S.aura-p); S.stats.donL++; popup(`NOTHING. -${fmt(p)} 💀`,'over'); S.shake=6; SFX.womp(); buzz(80); }
+  bump(elAura); updateHUD(); save(); schedule(0.5,checkAch); }
+elDon.addEventListener('click',e=>{ e.stopPropagation(); resolveDon(); });
 function setTier(nt){
   const up=nt>S.tier, from=S.tier; S.tier=nt; const v=TIERS[nt];
   elVibe.textContent=`${v.name} ${v.emoji}${S.halo?' · halo ✨':''}`; elVibe.classList.remove('shift'); void elVibe.offsetWidth; elVibe.classList.add('shift');
@@ -663,7 +734,7 @@ function spill(){ const top=g.bottomY-g.h; for(let i=0;i<40;i++){ const side=i%2
 function toggleMute(){ SFX.setMuted(!SFX.muted); elMute.textContent=SFX.muted?'🔇':'🔊'; }
 
 // ---------- input ----------
-document.addEventListener('pointerdown',e=>{ if(e.target.closest&&e.target.closest('#mute,#shopBtn,#shop,#toast,#installBtn,#mod .q')) return; e.preventDefault(); onDown(); });
+document.addEventListener('pointerdown',e=>{ if(e.target.closest&&e.target.closest('#mute,#shopBtn,#shop,#toast,#installBtn,#mod .q,#don')) return; e.preventDefault(); onDown(); });
 // safety net: if the mouse button is already up while we're still pouring (missed pointerup during a hitch), release
 document.addEventListener('pointermove',e=>{ if(S.phase==='pouring'&&e.pointerType==='mouse'&&e.buttons===0&&!S.keyHeld){ DBG.lostReleases++; onUp(); } },{passive:true});
 elToast.addEventListener('pointerdown',e=>e.stopPropagation());
@@ -681,17 +752,18 @@ function buyUpg(id){
   if(S.aura<cost){ SFX.deny(); toast(`${fmt(cost-S.aura)} more aura for ${u.name} ${u.emoji}`); return; }
   S.aura-=cost; S.upg[id]=l+1; SFX.buy(); confetti(50); toast(`${u.name} ${u.emoji} lv ${l+1} · ${u.fx(l+1)}`);
   if(id==='shield'&&l===0){ S.shieldReady=true; S.shieldCd=0; }
-  save(); renderShop(); updateHUD();
+  save(); renderShop(); updateHUD(); checkAch();
 }
 function renderShop(){
   elShopAura.textContent=`${fmt(S.aura)} ✨ · x${auraMult().toFixed(2)} aura${S.prestige?` · ★${S.prestige}`:''}`; let html='';
   document.querySelectorAll('#shop .tab').forEach(b=>b.classList.toggle('on',b.dataset.tab===S.shopTab));
   if(S.shopTab==='upgrades'){ elShopBody.innerHTML=renderUpgrades(); return; }
+  if(S.shopTab==='badges'){ const done=ACH.filter(a=>S.ach.includes(a.id)).length; html=`<h3>${done}/${ACH.length} badges · aura rewards on unlock</h3><div class="grid">`; for(const a of ACH){ const got=S.ach.includes(a.id); html+=`<div class="card badge${got?' owned eq':''}"><span class="em">${got?a.emoji:'🔒'}</span><span class="nm">${a.name}</span><span class="pr">${a.desc}</span><span class="mu">${got?'✓ ':''}+${fmtShort(a.reward)} aura</span></div>`; } elShopBody.innerHTML=html+'</div>'; return; }
   for(const cat of CATS){
     html+=`<h3>${CAT_NAMES[cat]}</h3><div class="grid">`;
-    for(const it of SKINS[cat]){ const owned=it.price===0||S.owned.has(cat+':'+it.id),eq=cat==='water'?hasFx(it.id):S.eq[cat]===it.id,poor=!owned&&S.aura<it.price;
-      const status=eq?(cat==='water'?'on ✓':'equipped'):owned?(cat==='water'?'tap to turn on':'tap to equip'):fmtShort(it.price)+' ✨';
-      html+=`<button class="card${eq?' eq':''}${owned?' owned':''}${poor?' poor':''}" data-cat="${cat}" data-id="${it.id}"><span class="em">${it.emoji}</span><span class="nm">${it.name}</span>${it.mult?`<span class="mu">+${Math.round(it.mult*100)}% aura${owned?' ✓':''}</span>`:''}<span class="pr">${status}</span></button>`; }
+    for(const it of SKINS[cat]){ const owned=it.price===0||S.owned.has(cat+':'+it.id),eq=cat==='water'?hasFx(it.id):S.eq[cat]===it.id,poor=!owned&&S.aura<it.price,plock=!owned&&it.preq&&S.prestige<it.preq;
+      const status=eq?(cat==='water'?'on ✓':'equipped'):owned?(cat==='water'?'tap to turn on':'tap to equip'):plock?`★${it.preq} prestige · ${fmtShort(it.price)} ✨`:fmtShort(it.price)+' ✨';
+      html+=`<button class="card${eq?' eq':''}${owned?' owned':''}${poor?' poor':''}${plock?' plock':''}${it.preq?' pres':''}" data-cat="${cat}" data-id="${it.id}"><span class="em">${it.emoji}</span><span class="nm">${it.name}${it.preq?' <small>★'+it.preq+'</small>':''}</span>${it.mult?`<span class="mu">+${Math.round(it.mult*100)}% aura${owned?' ✓':''}</span>`:''}<span class="pr">${status}</span></button>`; }
     html+='</div>';
   }
   elShopBody.innerHTML=html;
@@ -699,12 +771,13 @@ function renderShop(){
 function buyOrEquip(cat,id){
   const it=SKINS[cat].find(x=>x.id===id); if(!it) return; const key=cat+':'+id;
   if(!(it.price===0||S.owned.has(key))){
+    if(it.preq&&S.prestige<it.preq){ SFX.deny(); toast(`${it.name} needs prestige ★${it.preq}. you're at ★${S.prestige}. hit x100 ${it.preq-S.prestige} more time${it.preq-S.prestige>1?'s':''}`); return; }
     if(S.aura<it.price){ SFX.deny(); toast(`${fmt(it.price-S.aura)} more aura. keep pouring 🫗`); return; }
     S.aura-=it.price; S.owned.add(key); SFX.buy(); toast(`unlocked ${it.name} ${it.emoji} · +${Math.round(it.mult*100)}% aura 💸`); confetti(60);
     if(cat==='water'){ if(!hasFx(id)) S.fx.push(id); }
     else S.eq[cat]=id;
   } else { SFX.click(); if(cat==='water'){ S.fx=hasFx(id)?S.fx.filter(x=>x!==id):[...S.fx,id]; } else S.eq[cat]=id; }
-  if(g) layoutGlass(); save(); renderShop();
+  if(g) layoutGlass(); save(); renderShop(); updateHUD(); checkAch();
 }
 function openShop(){ if(S.screen!=='play'||S.shopOpen) return; onUp(); S.shopOpen=true; renderShop(); elQuality.textContent='graphics: '+S.quality+(S.quality==='auto'&&S.lowQ?' (low)':''); elShop.hidden=false; SFX.click(); }
 function closeShop(){ S.shopOpen=false; elShop.hidden=true; }
@@ -775,6 +848,7 @@ function update(dt){
   if((S.tier>=4||S.halo)&&Math.random()<0.05*Math.max(1,S.tier-3)*(S.lowQ?0.4:1)) parts.push({type:'spark',x:rand(0,W),y:H+10,vx:rand(-8,8),vy:-rand(18,50),life:rand(4,7),max:0,size:rand(1,2.5)});
   col.bg0=lerpC(col.bg0,v.bg0,k); col.bg1=lerpC(col.bg1,v.bg1,k); col.water=lerpC(col.water,v.water,k); col.deep=lerpC(col.deep,v.deep,k); col.glow=lerpC(col.glow,v.glow,k);
   if(S.shake>0) S.shake=Math.max(0,S.shake-28*dt);
+  { const show=!S.donResolved&&S.time<S.donUntil&&S.donPts>0&&S.phase!=='slot'; if(elDon.hidden===show){ elDon.hidden=!show; if(show){ elDon.querySelector('b').textContent=`double it · ${fmtShort(S.donPts)} 🎲`; } } if(show) elDon.style.setProperty('--left',((S.donUntil-S.time)/2.3*100).toFixed(0)+'%'); }
   S.dispAura+=(S.aura-S.dispAura)*Math.min(1,dt*8); if(Math.abs(S.aura-S.dispAura)<0.6) S.dispAura=S.aura; elAura.textContent=fmt(S.dispAura);
   if(!g) return;
   if(g.anim){ const t=clamp((S.time-g.anim.start)/g.anim.dur,0,1); g.x=lerp(g.anim.from,g.anim.to,g.anim.ease(t)); if(t>=1) g.anim=null; }
@@ -824,6 +898,7 @@ function surfacePath(x0,x1,ly){
 // background (base gradient + drifting blobs + vignette) is 5 full-screen fills; cache it and refresh ~8x/s
 const bgc=document.createElement('canvas'); let bgAt=-1,bgKey='';
 function drawBG(){
+  if(!canvas.width||!canvas.height) return;
   const t=S.time, key=col.bg0.map(v=>v|0).join()+col.bg1.map(v=>v|0).join()+col.glow.map(v=>v|0).join();
   if(t-bgAt>0.12||key!==bgKey||bgc.width!==canvas.width){
     bgAt=t; bgKey=key; const dpr=canvas.width/W; if(bgc.width!==canvas.width||bgc.height!==canvas.height){ bgc.width=canvas.width; bgc.height=canvas.height; }
@@ -857,6 +932,7 @@ function drawWater(){
   if(hasFx('aurora')&&!S.lowQ){ const ag=ctx.createLinearGradient(x0,0,x1,0); for(let i=0;i<=4;i++) ag.addColorStop(i/4,`hsla(${(S.time*40+i*70)%360},100%,70%,0.45)`); ctx.fillStyle=ag; ctx.beginPath(); surfacePath(x0,x1,ly); ctx.lineTo(x1,ly+34*hi); ctx.lineTo(x0,ly+34*hi); ctx.closePath(); ctx.fill(); }
   for(const b of bubbles){ ctx.beginPath(); ctx.arc(cx+b.ox,b.y,b.r,0,Math.PI*2); ctx.fillStyle='rgba(255,255,255,0.35)'; ctx.fill(); }
   drawCharm(cx,ly);
+  if(hasFx('starlight')){ ctx.fillStyle='#fff'; const n=S.lowQ?8:16; for(let i=0;i<n;i++){ const hx=((i*4271)%1000)/1000,hy=((i*9973)%1000)/1000; const py=g.bottomY-8-hy*Math.max(0,S.fill*g.h-14); if(py<ly+6) continue; const px=cx+(hx-0.5)*halfW(py)*1.7; const tw=Math.abs(Math.sin(S.time*2.5+i*1.3)), r=1.5+tw*3; ctx.globalAlpha=0.4+0.6*tw; ctx.beginPath(); ctx.moveTo(px-r*2,py); ctx.lineTo(px,py-r*0.5); ctx.lineTo(px+r*2,py); ctx.lineTo(px,py+r*0.5); ctx.closePath(); ctx.fill(); ctx.beginPath(); ctx.moveTo(px,py-r*2); ctx.lineTo(px+r*0.5,py); ctx.lineTo(px,py+r*2); ctx.lineTo(px-r*0.5,py); ctx.closePath(); ctx.fill(); } ctx.globalAlpha=1; }
   if(hasFx('glitter')){ ctx.fillStyle='#fff'; const n=Math.round(30*hi*(S.lowQ?0.5:1)); for(let i=0;i<n;i++){ const hx=((i*7919)%1000)/1000,hy=((i*104729)%1000)/1000; const py=g.bottomY-6-hy*Math.max(0,S.fill*g.h-10); if(py<ly+4) continue; const px=cx+(hx-0.5)*halfW(py)*1.8; ctx.globalAlpha=0.3+0.7*Math.abs(Math.sin(S.time*5+i)); ctx.beginPath(); ctx.arc(px,py,1.2+(i%3)*0.6,0,Math.PI*2); ctx.fill(); } ctx.globalAlpha=1; }
   const hl=lvl('hydra'); if(hl>0){ ctx.fillStyle='#ffd166'; const span=Math.max(0,S.fill*g.h-12); for(let i=0;i<hl;i++){ const hx=((i*7717)%1000)/1000,ph=((i*3313)%1000)/1000; const py=g.bottomY-6-((ph+S.time*0.05*(0.5+hx))%1)*span; if(py<ly+4) continue; const px=cx+(hx-0.5)*halfW(py)*1.7+Math.sin(S.time*1.5+i)*4; ctx.globalAlpha=0.45+0.5*Math.abs(Math.sin(S.time*3+i)); ctx.beginPath(); ctx.arc(px,py,1.7,0,Math.PI*2); ctx.fill(); } ctx.globalAlpha=1; }
   const rb=hasFx('rainbow');
@@ -883,7 +959,9 @@ function drawGlassFront(){
   if(sk.id==='mason'){ ctx.strokeStyle='rgba(255,255,255,0.35)'; ctx.lineWidth=3; [12,22].forEach(d=>{ ctx.beginPath(); ctx.moveTo(cx-g.tw/2+4,t+d); ctx.lineTo(cx+g.tw/2-4,t+d); ctx.stroke(); }); }
   if(sk.id==='boba'){ ctx.fillStyle='rgba(255,255,255,0.22)'; ctx.fillRect(cx-g.tw/2-7,t-7,g.tw+14,11); ctx.beginPath(); ctx.moveTo(cx+g.tw*0.18,t+6); ctx.lineTo(cx+g.tw*0.3,t-54); ctx.strokeStyle=rgba(col.glow,0.9); ctx.lineWidth=6; ctx.stroke(); }
   if(sk.id==='martini'){ ctx.strokeStyle=line; ctx.lineWidth=4; ctx.beginPath(); ctx.moveTo(cx,g.bottomY); ctx.lineTo(cx,g.bottomY+44); ctx.stroke(); ctx.beginPath(); ctx.ellipse(cx,g.bottomY+46,g.tw*0.28,7,0,0,Math.PI*2); ctx.stroke(); }
-  if(sk.id==='goblet'){ ctx.strokeStyle=line; ctx.lineWidth=5; ctx.beginPath(); ctx.moveTo(cx,g.bottomY); ctx.lineTo(cx,g.bottomY+30); ctx.stroke(); ctx.beginPath(); ctx.ellipse(cx,g.bottomY+34,g.tw*0.32,8,0,0,Math.PI*2); ctx.fillStyle='rgba(255,255,255,0.15)'; ctx.fill(); ctx.stroke(); }
+  if(sk.id==='voidglass'||sk.id==='goblet'){ ctx.strokeStyle=sk.id==='voidglass'?'rgba(200,150,255,0.8)':line; ctx.lineWidth=5; ctx.beginPath(); ctx.moveTo(cx,g.bottomY); ctx.lineTo(cx,g.bottomY+30); ctx.stroke(); ctx.beginPath(); ctx.ellipse(cx,g.bottomY+34,g.tw*0.32,8,0,0,Math.PI*2); ctx.fillStyle='rgba(255,255,255,0.15)'; ctx.fill(); ctx.stroke(); }
+  if(sk.id==='haloglass'){ ctx.save(); glassPath(0); glowStroke('255,209,102',0.8,3,S.lowQ?1:3); const hy=t-22-4*Math.sin(S.time*1.5), tilt=0.25+0.1*Math.sin(S.time*0.9); ctx.beginPath(); ctx.ellipse(cx,hy,g.tw*0.42,g.tw*0.42*tilt,0,0,Math.PI*2); glowStroke('255,230,150',0.95,5,S.lowQ?1:3); ctx.restore(); }
+  if(sk.id==='voidglass'){ ctx.save(); glassPath(3); ctx.fillStyle='rgba(4,2,12,0.75)'; ctx.fill(); glassPath(0); glowStroke('160,80,255',0.6+0.3*Math.sin(S.time*2),3,S.lowQ?1:4); ctx.strokeStyle='rgba(255,255,255,0.6)'; ctx.lineWidth=1.5; ctx.stroke(); ctx.restore(); }
   if(sk.id==='crystal'){ ctx.save(); glassPath(0); glowStroke(`${col.glow[0]|0},${col.glow[1]|0},${col.glow[2]|0}`,0.9,3.5,S.lowQ?1:4); ctx.restore(); glassPath(0); ctx.strokeStyle=`hsla(${(S.time*60)%360},100%,75%,0.7)`; ctx.lineWidth=1.5; ctx.stroke(); ctx.beginPath(); ctx.moveTo(cx+g.tw/2-14,t+16); ctx.lineTo(cx+g.bw/2-12,g.bottomY-30); ctx.strokeStyle=`hsla(${(S.time*60+180)%360},100%,80%,0.5)`; ctx.lineWidth=3; ctx.stroke(); }
   if(sk.id==='trophy'){ const my=g.bottomY-g.h*0.55; ctx.strokeStyle='#ffd166'; ctx.lineWidth=5; [-1,1].forEach(s=>{ ctx.beginPath(); ctx.ellipse(cx+s*(halfW(my)+16),my,17,30,0,s>0?-Math.PI/2:Math.PI/2,s>0?Math.PI/2:Math.PI*1.5); ctx.stroke(); }); ctx.fillStyle='#ffd166'; ctx.fillRect(cx-g.tw*0.28,g.bottomY+3,g.tw*0.56,9); }
 }
@@ -913,6 +991,8 @@ function drawCup(){
   ctx.save(); ctx.translate(P.x,P.y); ctx.rotate(-a); ctx.scale(S.cupScale,S.cupScale);
   if(sk.glow&&!S.lowQ){ const c=hex(sk.glow); cupPath(cw,ch); glowStroke(`${c[0]},${c[1]},${c[2]}`,0.5,4,3); }
   if(sk.sparkle){ ctx.fillStyle='#fff'; for(let i=0;i<4;i++){ const tw=Math.abs(Math.sin(S.time*4+i*1.7)); ctx.globalAlpha=tw; const sx=[-10,cw+14,cw*0.3,cw*0.9][i],sy=[ch*0.3,ch*0.7,ch*0.15,ch*0.5][i],r=2+tw*2; ctx.beginPath(); ctx.moveTo(sx-r*2,sy); ctx.lineTo(sx,sy-r*0.6); ctx.lineTo(sx+r*2,sy); ctx.lineTo(sx,sy+r*0.6); ctx.closePath(); ctx.fill(); ctx.beginPath(); ctx.moveTo(sx,sy-r*2); ctx.lineTo(sx+r*0.6,sy); ctx.lineTo(sx,sy+r*2); ctx.lineTo(sx-r*0.6,sy); ctx.closePath(); ctx.fill(); } ctx.globalAlpha=1; }
+  if(sk.halo){ ctx.save(); ctx.beginPath(); ctx.ellipse(cw/2,-14-3*Math.sin(S.time*1.6),cw*0.42,7,0,0,Math.PI*2); glowStroke('255,230,150',0.9,3.5,S.lowQ?1:3); ctx.restore(); }
+  if(sk.crown){ const sp=sprite('👑',30); ctx.save(); ctx.translate(cw/2,-20); ctx.rotate(Math.sin(S.time*1.2)*0.08); ctx.drawImage(sp,-sp.px/2,-sp.px/2,sp.px,sp.px); ctx.restore(); }
   cupPath(cw,ch); ctx.fillStyle=sk.fill; ctx.fill();
   ctx.save(); cupPath(cw,ch); ctx.clip(); ctx.rotate(a); ctx.fillStyle=rgba(col.water,0.85); ctx.fillRect(-400,lerp(30,1,S.cupTilt),800,800); ctx.restore();
   cupPath(cw,ch); ctx.strokeStyle=sk.stroke; ctx.lineWidth=3; ctx.lineJoin='round'; ctx.stroke();
@@ -962,7 +1042,7 @@ function frame(now){
   // if the page stalled for a long beat mid-pour (frame gap > 250ms), the release may have been lost: don't keep pouring blind
   if(S.phase==='pouring'&&(now-last0)>400&&!S.keyHeld){ DBG.stallReleases++; onUp(); }
   last0=now;
-  S.time+=dt; const t1=performance.now(); update(dt); const t2=performance.now(); draw(); const t3=performance.now();
+  S.time+=dt; const t1=performance.now(); try{ update(dt); }catch(e){ console.error('update',e); } const t2=performance.now(); try{ if(canvas.width&&canvas.height) draw(); }catch(e){ console.error('draw',e); } const t3=performance.now();
   const u=t2-t1,d=t3-t2; DBG.updEma+=(u-DBG.updEma)*0.05; DBG.drawEma+=(d-DBG.drawEma)*0.05; if(u>DBG.maxUpd) DBG.maxUpd=u; if(d>DBG.maxDraw) DBG.maxDraw=d;
   requestAnimationFrame(frame);
 }
