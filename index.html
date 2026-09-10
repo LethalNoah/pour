@@ -210,7 +210,7 @@ body.lowq #shopBtn.can::before{animation:none}
 <audio id="unlock" loop playsinline preload="auto" src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA="></audio>
 <script>
 'use strict';
-const VERSION='1.4.4';
+const VERSION='1.5.0';
 const $=s=>document.querySelector(s);
 const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const IS_IOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
@@ -342,7 +342,7 @@ const UPG=[
  {id:'opener',name:'ignition',emoji:'🚀',base:150000,growth:1.7,max:10,req:{combo:3},
   blurb:'a perfect opener starts higher. a close one too.',fx:l=>`perfect opener x${5+Math.round(1.5*l)} · great x${3+Math.floor(l/2)}`},
  {id:'chal',name:'challenge master',emoji:'🎲',base:100000,growth:1.6,max:15,req:{hands:2},
-  blurb:'bigger challenge bonuses, more challenges.',fx:l=>`+${l*15}% bonus · ${Math.round(Math.min(0.7,0.4+0.02*l)*100)}% odds`},
+  blurb:'bigger bonuses, more challenges, and more double + triple stacks.',fx:l=>`+${l*15}% bonus · ${Math.round(Math.min(0.7,0.4+0.02*l)*100)}% odds · double ${Math.round((8+2*l))}%`},
  {id:'brim',name:'surface tension',emoji:'🧢',base:200000,growth:1.7,max:10,req:{hands:3},
   blurb:'brim pours pay more.',fx:l=>`brim x${(3+0.5*l).toFixed(1)}`},
  {id:'shield',name:'spill shield',emoji:'🛡️',base:300000,growth:1.75,max:9,req:{best:10},
@@ -394,9 +394,9 @@ const PHR={
  miss:['bro. 💀','you good?','underfilled 💀','L','girl what','not it','thirsty much?',"that's a sip not a pour",'chopped','why','skill issue','rizzless','fell off','it\'s not giving','you fumbled 🤲','delulu is not the solulu','chat is this real 😭',"ain't no way",'brainrot detected 🧠','unc behavior','crying rn','the ick 😬','hold this L'],
  over:['COOKED 💀',"it's so over",'spilled. cooked. done.','NAH 😭','crashed out','touch grass','L + ratio + overflow','WHO RAISED YOU','delulu','oh no no no','cooked. done. finished.','not the overflow 😭','go touch grass 🌱','fumbled the bag 💼','chat he\'s cooked','gg go next','pipe down','certified L','ratio + cooked','sent to the shadow realm','wasted. literally.','main character death 🪦'],
  back:["WE'RE SO BACK 🗣️🔥","HE'S BACK 🗣️🗣️🗣️","LOCKED BACK IN 🔒🔥","THE COMEBACK 🗣️","NEVER LEFT 🔥","REDEMPTION ARC 📈"],
- opener:['FIRST TRY?? x5 🚀','OPENED WITH A PERFECT. x5.','WOKE UP AND CHOSE VIOLENCE x5','DAY ONE GOAT 🐐 x5','INSTANT x5. WHO IS HE','x5 OFF RIP 🗣️','NO WARMUP NEEDED x5 🔥'],
+ opener:['FIRST TRY?? x{n} 🚀','OPENED WITH A PERFECT. x{n}.','WOKE UP AND CHOSE VIOLENCE x{n}','DAY ONE GOAT 🐐 x{n}','INSTANT x{n}. WHO IS HE','x{n} OFF RIP 🗣️','NO WARMUP NEEDED x{n} 🔥'],
  brim:['BRIM. NO SPILL. x3 🧢','TO THE TOP. x3 🧢','FULL SEND. NO SPILL. x3','SURFACE TENSION GOD x3 🧢'],
- openerClose:["SO CLOSE. HE'S WARMING UP 🔥",'x3 START. LOCKED IN 🔒','NOT PERFECT. STILL HIM. x3',"oh he's cooking 🍳 x3",'THE WARMUP IS OVER x3 🔥','x3 OFF THE RIP 👀'],
+ openerClose:["SO CLOSE. HE'S WARMING UP x{n} 🔥",'x{n} START. LOCKED IN 🔒','NOT PERFECT. STILL HIM. x{n}',"oh he's cooking 🍳 x{n}",'THE WARMUP IS OVER x{n} 🔥','x{n} OFF THE RIP 👀'],
  openerGood:['warming up 🔥 keep going','not bad. now lock in. 🔒','the run starts NOW 🏁',"ok we're cooking 🍳",'shake it off. next one. 🔥'],
  prestige:['PRESTIGE ★','ASCENDED ★','x100. RESET. REBORN. ★','THE CYCLE CONTINUES ★'],
 };
@@ -461,7 +461,7 @@ const SFX={
 
 // ---------- state ----------
 let W=0,H=0;
-const S={screen:'title',phase:'idle',fill:0,target:.6,combo:0,aura:0,dispAura:0,bestCombo:0,glasses:0,perfects:0,tier:0,arpLast:0,arpI:0,colSpeed:2,owned:new Set(),eq:{glass:'classic',cup:'classic',confetti:'rect',flavor:'none',charm:'none'},fx:[],golden:false,prestige:0,halo:false,driftT:0,upg:{},shieldReady:false,shieldCd:0,shopTab:'upgrades',quality:'auto',lowQ:false,frameEma:0.016,shopOpen:false,mod:null,time:0,shake:0,hitstop:0,pourT:0,justFailed:false,streamActive:false,streamTopY:0,targetAlpha:1,cupTilt:0,cupY:200,draining:false,fanumDone:false,fanumAt:0};
+const S={screen:'title',phase:'idle',fill:0,target:.6,combo:0,aura:0,dispAura:0,bestCombo:0,glasses:0,perfects:0,tier:0,arpLast:0,arpI:0,colSpeed:2,owned:new Set(),eq:{glass:'classic',cup:'classic',confetti:'rect',flavor:'none',charm:'none'},fx:[],golden:false,mods:[],prestige:0,halo:false,driftT:0,upg:{},shieldReady:false,shieldCd:0,shopTab:'upgrades',quality:'auto',lowQ:false,frameEma:0.016,shopOpen:false,mod:null,time:0,shake:0,hitstop:0,pourT:0,justFailed:false,streamActive:false,streamTopY:0,targetAlpha:1,cupTilt:0,cupY:200,draining:false,fanumDone:false,fanumAt:0};
 const col={bg0:TIERS[0].bg0.slice(),bg1:TIERS[0].bg1.slice(),water:TIERS[0].water.slice(),deep:TIERS[0].deep.slice(),glow:TIERS[0].glow.slice()};
 let g=null; const parts=[],bubbles=[],timers=[];
 const N=48,surf={y:new Float32Array(N),v:new Float32Array(N)};
@@ -476,23 +476,23 @@ function layoutGlass(){ if(!g) return; const sk=glassSkin(),base=W<=640?Math.min
   let h=base*g.hs*(sk.hs||1), tw=Math.min(base*0.62*g.ws*(sk.ws||1),W*0.8);
   const topMin=(W<=640?250:150)+100*S.cupScale+20, bottomMax=W<=640?H-165:Math.min(H*0.84,H-150), maxH=bottomMax-topMin;
   // never squash: if the glass must shrink to fit, shrink width with it. normal glasses shrink at most 15% and may overlap the pill row instead.
-  if(h>maxH){ const s=Math.max(S.mod==='gulp'?0.4:0.85,maxH/h); h*=s; tw*=s; }
+  if(h>maxH){ const s=Math.max(hasMod('gulp')?0.4:0.85,maxH/h); h*=s; tw*=s; }
   h=Math.max(80,h); g.h=h; g.tw=tw; g.bw=g.tw*sk.bw; g.cx=W/2; g.bottomY=Math.min(H*0.5+h/2+24,bottomMax); }
 // drunk line drifts only while the glass is idle or being poured; it freezes the instant you let go.
-const targetNow=()=>S.target>=1?1:clamp(S.target+(S.mod==='drunk'?Math.sin(S.driftT*1.6)*0.07:0),0.05,1);
+const targetNow=()=>S.target>=1?1:clamp(S.target+(hasMod('drunk')?Math.sin(S.driftT*1.6)*0.07:0),0.05,1);
 // brim targets (rim) get a wider window and clearance above the rim before it counts as a spill.
 const isBrim=()=>S.target>=1;
-const windows=()=>{ const h=lvl('hands'); return isBrim()?{p:0.02+0.001*h,g:0.045+0.002*h,gd:0.08}:S.mod==='tiny'?{p:0.008+0.0005*h,g:0.02+0.001*h,gd:0.045}:{p:0.015+0.001*h,g:0.04+0.002*h,gd:0.08}; };
+const windows=()=>{ const h=lvl('hands'); return isBrim()?{p:0.02+0.001*h,g:0.045+0.002*h,gd:0.08}:hasMod('tiny')?{p:0.008+0.0005*h,g:0.02+0.001*h,gd:0.045}:{p:0.015+0.001*h,g:0.04+0.002*h,gd:0.08}; };
 const spillAt=()=>isBrim()?1.035:1.012;
-const gx=()=>g.cx+g.x+(S.mod==='wobbly'?Math.sin(S.time*2.6)*28:0);
+const gx=()=>g.cx+g.x+(hasMod('wobbly')?Math.sin(S.time*2.6)*28:0);
 const halfW=y=>lerp(g.bw/2,g.tw/2,clamp((g.bottomY-y)/g.h,0,1));
 const levelY=()=>g.bottomY-S.fill*g.h;
 const cupLip=()=>({x:W/2+4,y:S.cupY});
-const impactX=()=>{const P=cupLip();return P.x+0.02*Math.max(0,levelY()-P.y)+(S.mod==='gusty'?Math.sin(S.time*3.1)*Math.min(34,g.tw*0.22):0)};
+const impactX=()=>{const P=cupLip();return P.x+0.02*Math.max(0,levelY()-P.y)+(hasMod('gusty')?Math.sin(S.time*3.1)*Math.min(34,g.tw*0.22):0)};
 function surfSpan(){ const hw=halfW(levelY())+16; const c=gx(); return [c-hw,c+hw]; }
 function surfIndex(x){ const [x0,x1]=surfSpan(); return clamp(Math.round((x-x0)/(x1-x0)*(N-1)),1,N-2); }
 function surfAt(x){ const [x0,x1]=surfSpan(); const f=clamp((x-x0)/(x1-x0),0,1)*(N-1); const i=Math.floor(f),t=f-i; return lerp(surf.y[i],surf.y[Math.min(N-1,i+1)],t); }
-function pourRate(){ let r=0.30+Math.min(S.combo,25)*0.013; if(S.mod==='speed') r*=1.9; if(S.mod==='slowmo') r*=0.55; if(S.mod==='shot') r*=1.35; if(S.mod==='gulp') r*=0.85; return r; }
+function pourRate(){ let r=0.30+Math.min(S.combo,25)*0.013; if(hasMod('speed')) r*=1.9; if(hasMod('slowmo')) r*=0.55; if(hasMod('shot')) r*=1.35; if(hasMod('gulp')) r*=0.85; return r; }
 // water still in the air after release keeps landing for this long. this is the feel of the game; leave it.
 const travelTime=()=>0.11;
 
@@ -512,21 +512,29 @@ function popup(text,kind,dy=0){ const el=document.createElement('div'); el.class
   if(dy>0&&S.lastPopY!=null) y=Math.max(y,S.lastPopY+S.lastPopH/2+18+(dy-54)); el.style.left=x+'px'; el.style.top=y+'px'; el.style.setProperty('--r',rand(-7,7).toFixed(1)+'deg'); if(kind==='perfect'||kind==='milestone') el.style.fontSize=Math.min((kind==='perfect'?58:50)*(1+Math.min(S.combo,12)*0.025),W*0.11)+'px'; elPops.appendChild(el); if(dy<=0){ S.lastPopY=y; S.lastPopH=el.offsetHeight; } setTimeout(()=>el.remove(),2000); }
 function bump(el){ el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); setTimeout(()=>el.classList.remove('bump'),160); }
 function updateHUD(){ elCombo.textContent='x'+S.combo; const sh=$('#shieldHud'); sh.hidden=lvl('shield')<1; sh.textContent=S.shieldReady?'🛡️ shield ready':`🛡️ recharging · ${S.shieldCd}`; sh.classList.toggle('ready',S.shieldReady); sh.classList.toggle('charging',!S.shieldReady); $('#lvl').textContent=`lv ${totalLvl()} · x${auraMult().toFixed(2)} aura`; elShopBtn.classList.toggle('can',canAffordAnyUpg()); elPrest.textContent=S.prestige>0?`★ prestige ${S.prestige}`:''; elPrest.hidden=S.prestige===0; $('#combo').classList.toggle('halo',S.halo); elCombo.classList.toggle('hot',S.combo>=3&&S.combo<10); elCombo.classList.toggle('insane',S.combo>=10); elStats.textContent=`${S.glasses} poured · ${S.perfects} perfect · best combo x${S.bestCombo} · v${VERSION}`; if(S.glasses>=3) elHint.style.opacity=0; }
-function showMod(){ if(S.mod){ const m=MODS.find(m=>m.id===S.mod); elMod.innerHTML=`<b>${m.label}</b><span class="mdesc">${m.desc}</span><span class="bonus">bonus x${modBonusOf(m).toFixed(2).replace(/\.?0+$/,'')} aura</span><button class="q" data-desc="${m.label} · ${m.desc}">?</button>`; elMod.classList.add('on'); SFX.mod(); } else elMod.classList.remove('on'); }
+function showMod(){ if(S.mods.length){ const ms=S.mods.map(id=>MODS.find(m=>m.id===id)); const bonus=ms.reduce((a,m)=>a*modBonusOf(m),1); const multi=ms.length>1; elMod.innerHTML=`<b>${multi?'⚡'.repeat(ms.length-1)+' ':''}${ms.map(m=>m.label).join(' + ')}</b><span class="mdesc">${ms.map(m=>m.desc).join(' ')}</span><span class="bonus">bonus x${bonus.toFixed(2).replace(/\.?0+$/,'')} aura${multi?' · '+ms.length+'x stack':''}</span><button class="q" data-desc="${ms.map(m=>m.label+' · '+m.desc).join('  |  ')}">?</button>`; elMod.classList.add('on'); SFX.mod(); if(multi){ schedule(0.3,()=>{ toast(`${ms.length===3?'TRIPLE':'DOUBLE'} CHALLENGE ⚡ x${bonus.toFixed(2).replace(/\.?0+$/,'')} aura`); SFX.ascend(Math.min(S.tier+1,TIERS.length-1)); buzz([30,30,30]); }); } } else elMod.classList.remove('on'); }
+const hasMod=id=>S.mods.includes(id);
+const EXCLUSIVE=[['shot','gulp'],['speed','slowmo'],['nocap','drunk'],['nocap','shot'],['nocap','leaky']];
+function rollMods(){
+  const mods=[]; if(Math.random()>=modChance()) return mods;
+  const cl=lvl('chal'), p2=0.08+0.02*cl, p3=0.03+0.01*cl, count=Math.random()<p2?(Math.random()<p3?3:2):1;
+  const pool=MODS.map(m=>m.id).sort(()=>Math.random()-0.5);
+  for(const id of pool){ if(mods.length>=count) break; if(EXCLUSIVE.some(([a,b])=>(a===id&&mods.includes(b))||(b===id&&mods.includes(a)))) continue; mods.push(id); }
+  return mods;
+}
 elMod.addEventListener('click',e=>{ const q=e.target.closest('.q'); if(q){ e.stopPropagation(); toast(q.dataset.desc); SFX.click(); } });
 
 // ---------- flow ----------
 function startGame(){ SFX.init(); SFX.resume(); $('#unlock').play().catch(()=>{}); elTitle.classList.add('off'); S.screen='play'; load(); S.cupY=H*0.25; newGlass(true); updateHUD(); SFX.click(); if(S.halo) setTier(TIERS.length-1); }
 function newGlass(first){
-  S.draining=false; S.mod=null;
-  if(!first&&S.combo>=3&&Math.random()<modChance()) S.mod=pick(MODS).id;
+  S.draining=false; S.mods=(!first&&S.combo>=3)?rollMods():[]; S.mod=S.mods[0]||null;
   // golden glass: rare, pays x5. a little lottery in every glass.
   S.golden=S.forceGolden||(!first&&Math.random()<0.06); S.forceGolden=false; if(S.golden){ schedule(0.35,()=>{ toast('✨ GOLDEN GLASS · x5 aura on this one ✨'); SFX.ascend(Math.min(S.tier+2,TIERS.length-1)); }); }
   let hs=rand(0.75,1.15),ws=rand(0.8,1.15);
-  if(S.mod==='shot'){hs=0.5;ws=0.7} if(S.mod==='gulp'){hs=2.1;ws=1.7}
+  if(hasMod('shot')){hs=0.5;ws=0.7} if(hasMod('gulp')){hs=2.1;ws=1.7}
   g={hs,ws,x:W*0.8,anim:{from:W*0.8,to:0,start:S.time,dur:0.5,ease:easeOutBack}};
   layoutGlass();
-  S.fill=0; S.target=S.mod==='shot'?rand(0.5,0.9):S.mod==='nocap'?1:S.mod==='drunk'?rand(0.4,0.85):rand(0.32,0.97); if(S.target>=0.93) S.target=1; S.targetAlpha=1; S.phase='idle'; S.pourT=0; S.streamActive=false;
+  S.fill=0; S.target=hasMod('shot')?rand(0.5,0.9):hasMod('nocap')?1:hasMod('drunk')?rand(0.4,0.85):rand(0.32,0.97); if(S.target>=0.93) S.target=1; S.targetAlpha=1; S.phase='idle'; S.pourT=0; S.streamActive=false;
   S.fanumDone=false; S.fanumAt=rand(0.2,Math.max(0.25,S.target-0.15));
   surf.y.fill(0); surf.v.fill(0); bubbles.length=0;
   showMod();
@@ -539,7 +547,7 @@ function flash(){ if(REDUCED) return; elFlash.classList.remove('on'); void elFla
 function judge(forced){
   const w=windows(),ad=isBrim()&&S.fill>=1?0:Math.abs(S.fill-targetNow());
   const tier=forced||(ad<=w.p?'perfect':ad<=w.g?'great':ad<=w.gd?'good':'miss');
-  const prevCombo=S.combo, opener=prevCombo===0&&!forced, im=auraMult(), mod=MODS.find(m=>m.id===S.mod), mb=mod?modBonusOf(mod):1; let pts=0;
+  const prevCombo=S.combo, opener=prevCombo===0&&!forced, im=auraMult(), mb=S.mods.reduce((a,id)=>a*modBonusOf(MODS.find(m=>m.id===id)),1); let pts=0;
   let lost=tier==='miss'||tier==='over';
   // spill shield: absorbs one fail, keeps combo + halo, then recharges over clean glasses
   const shielded=lost&&S.shieldReady;
@@ -558,7 +566,7 @@ function judge(forced){
   if(tier==='perfect') pts=Math.round(100*mult*im*mb*brim*gold*nm); else if(tier==='great') pts=Math.round(50*mult*im*mb*brim*gold*nm); else if(tier==='good') pts=Math.round(20*mult*im); else if(tier==='over'&&!shielded) pts=-250;
   if(nm>1){ if(tier==='perfect'||tier==='great') schedule(0.2,()=>popup(`slot x${nm} 🎰`,'bonus brim',-120)); else schedule(0.2,()=>toast(`x${nm} slot bonus wasted 💀`)); }
   if(comeback&&S.combo>openerCombo()) schedule(0.9,()=>toast(`redemption: restored to x${S.combo} 📈`));
-  if(lost&&S.mod==='jackpot'){ const tax=Math.floor(S.aura*0.05); pts-=tax; schedule(0.25,()=>popup(`jackpot tax -${fmt(tax)} 🎰`,'pts neg',110)); }
+  if(lost&&hasMod('jackpot')){ const tax=Math.floor(S.aura*0.05); pts-=tax; schedule(0.25,()=>popup(`jackpot tax -${fmt(tax)} 🎰`,'pts neg',110)); }
   if(gold>1){ confetti(80); S.shake=Math.max(S.shake,8); schedule(0.15,()=>popup('GOLDEN x5 ✨','bonus brim',-96)); }
   if(brim>1){ confetti(60); S.shake=Math.max(S.shake,6); }
   // opener hype: the first glass of a run is always a moment
@@ -569,7 +577,7 @@ function judge(forced){
   if(comeback){ pts+=cb; S.hitstop=0.3; S.shake=11; confetti(170); flash(); SFX.soBack(); if(navigator.vibrate) navigator.vibrate([40,40,40,40,140]); }
   const hadHalo=S.halo; if(lost) S.halo=false;
   S.aura=Math.max(0,S.aura+pts);
-  let text=comeback?pick(PHR.back):opener&&tier==='perfect'?pick(PHR.opener):opener&&tier==='great'?pick(PHR.openerClose):opener&&tier==='good'?pick(PHR.openerGood):pick(PHR[tier]);
+  let text=(comeback?pick(PHR.back):opener&&tier==='perfect'?pick(PHR.opener):opener&&tier==='great'?pick(PHR.openerClose):opener&&tier==='good'?pick(PHR.openerGood):pick(PHR[tier])).replace(/\{n\}/g,S.combo);
   if(tier==='over'&&prevCombo>=5) text=`it's so over. (x${prevCombo} gone) 💀`;
   if(tier==='miss'&&prevCombo>=5) text=`x${prevCombo} combo... for this? 💔`;
   if(lost&&hadHalo) text=`halo lost. ${prevCombo>0?'x'+prevCombo+' gone. ':''}back to earth 🪂`;
@@ -582,9 +590,9 @@ function judge(forced){
   if(brim>1) popup(pick(PHR.brim),'bonus brim',big?146:(mb>1?120:86));
   if(comeback) schedule(0.7,()=>toast(`comeback bonus +${fmt(cb)} aura 🗣️ locked back in`));
   else if(opener&&tier==='perfect') schedule(0.7,()=>toast(`perfect opener. straight to x${openerCombo()} 🚀`));
-  else if(opener&&tier==='great') schedule(0.7,()=>toast('close opener. x3 head start 🔥'));
+  else if(opener&&tier==='great') schedule(0.7,()=>toast(`close opener. x${S.combo} head start 🔥`));
   if(tier==='perfect'||tier==='great') bump(elCombo);
-  if(mb>1&&(tier==='perfect'||tier==='great')) { const el=[...document.querySelectorAll('.pop.bonus')].pop(); if(el&&lvl('chal')) el.textContent=`challenge x${mb.toFixed(2)} 🎲`; }
+  if(mb>1&&(tier==='perfect'||tier==='great')) { const el=[...document.querySelectorAll('.pop.bonus')].pop(); if(el&&(lvl('chal')||S.mods.length>1)) el.textContent=`${S.mods.length>1?S.mods.length+'x challenge':'challenge'} x${mb.toFixed(2).replace(/\.?0+$/,'')} ${S.mods.length>1?'⚡':'🎲'}`; }
   const prestiged=S.combo>=100; if(prestiged) prestige();
   if(!prestiged&&(tier==='perfect'||tier==='great')&&Math.floor(S.combo/10)>Math.floor(prevCombo/10)){ S.pendingSlot=true; schedule(0.4,()=>toast(`x${S.combo} 🎰 slot glass incoming · hold to chug`)); }
   const nt=S.halo?TIERS.length-1:tierFor(S.combo), tierUp=nt>S.tier;
@@ -599,7 +607,7 @@ function exitGlass(){ S.phase='exit'; S.draining=true; SFX.gulp(); g.anim={from:
 // ---------- slot glass: chug to reveal (every 10 combo) ----------
 const SLOT_H=[0.72,0.46,0.20], SLOT_REVEAL=[0.66,0.40,0.14];
 function newSlotGlass(){
-  S.draining=false; S.mod=null; S.golden=false;
+  S.draining=false; S.mods=[]; S.mod=null; S.golden=false;
   g={hs:1,ws:1.05,x:W*0.8,anim:{from:W*0.8,to:0,start:S.time,dur:0.5,ease:easeOutBack}}; layoutGlass();
   S.fill=1; S.phase='slot'; S.streamActive=false; S.targetAlpha=0; surf.y.fill(0); surf.v.fill(0); bubbles.length=0;
   const total=PRIZES.reduce((a,p)=>a+p.w,0); let roll=Math.random()*total, prize=PRIZES[0]; for(const p of PRIZES){ if(roll<p.w){ prize=p; break; } roll-=p.w; }
@@ -783,8 +791,8 @@ function update(dt){
       for(let i=0;i<2;i++) parts.push({type:'drop',x:ix+rand(-3,3),y:ly+rand(-2,2),vx:rand(-90,90)*(0.6+r),vy:rand(-170,-40),life:rand(.2,.45),size:rand(1.5,3)});
       if(Math.random()<0.5) bubbles.push({ox:ix-gx()+rand(-10,10),y:ly+rand(6,30),vy:-rand(20,55),r:rand(1.5,3.5),life:rand(.8,1.5)});
     }
-    if(S.phase==='pouring'&&S.mod==='trust') S.targetAlpha=clamp(1-(S.pourT-0.3)/0.4,0,1);
-    if(S.mod==='fanum'&&!S.fanumDone&&S.phase==='pouring'&&S.fill>=S.fanumAt){ S.fanumDone=true; S.fill=Math.max(0,S.fill-0.12); popup('*sip* 🍟','sip',-40); toast('fanum taxed 💀 someone sipped your water'); SFX.slurp(); for(let i=0;i<N;i++) surf.v[i]-=1.2; }
+    if(S.phase==='pouring'&&hasMod('trust')) S.targetAlpha=clamp(1-(S.pourT-0.3)/0.4,0,1);
+    if(hasMod('fanum')&&!S.fanumDone&&S.phase==='pouring'&&S.fill>=S.fanumAt){ S.fanumDone=true; S.fill=Math.max(0,S.fill-0.12); popup('*sip* 🍟','sip',-40); toast('fanum taxed 💀 someone sipped your water'); SFX.slurp(); for(let i=0;i<N;i++) surf.v[i]-=1.2; }
     if(S.fill>spillAt()) doOverflow();
   }
   if(S.streamActive&&S.phase!=='pouring'){ const P=cupLip(),ly=levelY(); S.streamTopY+=((ly-P.y)/travelTime())*dt; if(S.streamTopY>=ly-1) S.streamActive=false; }
@@ -793,8 +801,8 @@ function update(dt){
   if(S.phase==='slot'&&S.slot&&S.slot.hold&&!S.slot.done){ const sl=S.slot; S.fill=Math.max(0.08,S.fill-0.72*dt); SFX.setPour(true,1-S.fill,0.5);
     if(Math.random()<0.7) bubbles.push({ox:g.tw*0.24+rand(-6,6),y:g.bottomY-rand(6,20),vy:-rand(60,120),r:rand(1.5,3.5),life:rand(.6,1.2)});
     for(let i=0;i<3;i++) if(!sl.revealed[i]&&S.fill<SLOT_REVEAL[i]){ sl.revealed[i]=true; sl.revealT[i]=S.time; buzz(45); SFX.tone(620+i*260,0.22,{vol:0.14,type:'triangle'}); SFX.tone((620+i*260)*2,0.3,{vol:0.05}); for(let k=0;k<10;k++) parts.push({type:'conf',x:gx()+rand(-20,20),y:g.bottomY-SLOT_H[i]*g.h,vx:rand(-200,200),vy:rand(-300,-80),rot:0,vr:rand(-8,8),color:'#ffd166',w:6,h:4,life:rand(.5,.9)}); if(i===2) schedule(0.35,finishSlot); } }
-  if(S.mod==='leaky'&&S.fill>0&&(S.phase==='pouring'||S.phase==='releasing'||S.phase==='settling'||S.phase==='idle')){ S.fill=Math.max(0,S.fill-0.06*dt); if(Math.random()<0.4) parts.push({type:'drop',x:gx()+g.bw*0.3,y:g.bottomY+2,vx:rand(-5,5),vy:rand(20,60),life:rand(.5,.9),size:rand(1.5,2.5)}); }
-  if(hasFx('fizz')&&S.fill>0.06&&S.mod!=='blackout'&&Math.random()<(S.tier>=5?0.6:0.35)) bubbles.push({ox:rand(-1,1)*halfW(g.bottomY-10)*0.85,y:g.bottomY-rand(4,14),vy:-rand(25,65),r:rand(1,3),life:rand(1,3)});
+  if(hasMod('leaky')&&S.fill>0&&(S.phase==='pouring'||S.phase==='releasing'||S.phase==='settling'||S.phase==='idle')){ S.fill=Math.max(0,S.fill-0.06*dt); if(Math.random()<0.4) parts.push({type:'drop',x:gx()+g.bw*0.3,y:g.bottomY+2,vx:rand(-5,5),vy:rand(20,60),life:rand(.5,.9),size:rand(1.5,2.5)}); }
+  if(hasFx('fizz')&&S.fill>0.06&&!hasMod('blackout')&&Math.random()<(S.tier>=5?0.6:0.35)) bubbles.push({ox:rand(-1,1)*halfW(g.bottomY-10)*0.85,y:g.bottomY-rand(4,14),vy:-rand(25,65),r:rand(1,3),life:rand(1,3)});
   updateSurface(dt);
   for(let i=parts.length-1;i>=0;i--){ const p=parts[i]; if(p.type==='spark'){ if(!p.max) p.max=p.life; p.x+=Math.sin(S.time*1.5+i)*10*dt; } else if(p.type==='flame'){ if(!p.max) p.max=p.life; p.x+=Math.sin(S.time*12+i)*22*dt; } else p.vy+=(p.type==='conf'?900:700)*dt; if(p.type==='conf'){p.vx*=0.985;p.rot+=p.vr*dt;} p.x+=p.vx*dt; p.y+=p.vy*dt; p.life-=dt; if(p.life<=0||p.y>H+30) parts.splice(i,1); }
   const ly=levelY();
@@ -838,7 +846,7 @@ function drawGlassBack(){
 }
 function drawWater(){
   if(S.fill<=0.002) return;
-  const ly=levelY(),[x0,x1]=surfSpan(),cx=gx(),dark=S.mod==='blackout',hi=S.tier>=5?1.6:1;
+  const ly=levelY(),[x0,x1]=surfSpan(),cx=gx(),dark=hasMod('blackout'),hi=S.tier>=5?1.6:1;
   ctx.save(); glassPath(3); ctx.clip();
   ctx.beginPath(); surfacePath(x0,x1,ly); ctx.lineTo(x1,g.bottomY+10); ctx.lineTo(x0,g.bottomY+10); ctx.closePath();
   if(dark){ ctx.fillStyle='rgba(255,255,255,0.03)'; ctx.fill(); ctx.restore(); return; }
