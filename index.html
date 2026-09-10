@@ -125,6 +125,9 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none;background:#06091
 .pop.pts.neg{color:#ff7b7b}
 .pop.sip{font-size:30px;color:#ffe08a}
 .prest{color:#ffd166;opacity:1;text-shadow:0 0 12px rgba(255,209,102,.7)}
+.shieldhud{color:#9be7ff;opacity:1;text-transform:none;letter-spacing:.06em}
+.shieldhud.ready{text-shadow:0 0 12px rgba(155,231,255,.8)}
+.shieldhud.charging{opacity:.6}
 #combo.halo{border-color:#ffd166;box-shadow:0 0 34px rgba(255,209,102,.55),0 8px 30px rgba(0,0,0,.25);animation:haloPulse 2s ease-in-out infinite}
 @keyframes haloPulse{50%{box-shadow:0 0 54px rgba(255,209,102,.9),0 8px 30px rgba(0,0,0,.25)}}
 .pop.back.small{font-size:clamp(44px,6.5vw,72px)}
@@ -172,7 +175,7 @@ body.lowq #shopBtn.can::before{animation:none}
 <canvas id="c"></canvas>
 <div id="hud">
   <div id="aura" class="panelbox"><span class="lbl">aura ✨</span><span id="auraNum">0</span><span id="lvl" class="lbl lvl">lv 0 · x1.00 aura</span></div>
-  <div id="combo" class="panelbox"><span id="comboNum">x0</span><span class="lbl">combo 🔥</span><span id="prest" class="lbl prest" hidden></span></div>
+  <div id="combo" class="panelbox"><span id="comboNum">x0</span><span class="lbl">combo 🔥</span><span id="prest" class="lbl prest" hidden></span><span id="shieldHud" class="lbl shieldhud" hidden></span></div>
   <div id="vibe">npc mode 🌑</div>
   <div id="mod"></div>
   <div id="pops"></div>
@@ -188,7 +191,7 @@ body.lowq #shopBtn.can::before{animation:none}
     <div class="head"><span>aura shop 🛍️</span><span id="shopAura">0 ✨</span><button id="shopClose">✕</button></div>
     <div class="tabs"><button class="tab on" data-tab="upgrades">⬆️ upgrades</button><button class="tab" data-tab="style">✨ style</button></div>
     <div id="shopBody"></div>
-    <p class="fine">every item boosts the aura you earn. water effects stack. spending never touches your combo. no refunds. no cap.</p>
+    <p class="fine">every item you own boosts your aura, equipped or not. water effects stack. spending never touches your combo. no refunds. no cap.</p>
     <div class="foot"><button id="installBtn2" hidden>📲 install as an app</button><button id="qualityBtn">graphics: auto</button><button id="resetBtn">reset aura &amp; items</button><button id="wipeBtn">🧪 dev: wipe everything</button><button id="dbgBtn">🐛 debug</button><button id="hapBtn">📳 test haptics</button></div>
     <pre id="dbg" hidden></pre>
   </div>
@@ -207,7 +210,7 @@ body.lowq #shopBtn.can::before{animation:none}
 <audio id="unlock" loop playsinline preload="auto" src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA="></audio>
 <script>
 'use strict';
-const VERSION='1.4.3';
+const VERSION='1.4.4';
 const $=s=>document.querySelector(s);
 const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const IS_IOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
@@ -322,7 +325,8 @@ const SKINS={
 const fmtShort=n=>n>=1e9?(n/1e9).toFixed(n%1e9?2:0).replace(/\.?0+$/,'')+'B':n>=1e6?(n/1e6).toFixed(n%1e6?1:0).replace(/\.0$/,'')+'M':n>=1e4?Math.round(n/1e3)+'k':fmt(n);
 const CAT_NAMES={flavor:'flavor · tints the water',charm:'charm · floats in the glass',glass:'glass',water:'water effects · these stack',cup:'pourer',confetti:'confetti'};
 const CATS=['flavor','charm','glass','water','cup','confetti'];
-const itemMult=()=>{ let m=1; for(const cat of ['glass','cup','confetti','flavor','charm']){ const it=SKINS[cat].find(x=>x.id===S.eq[cat]); if(it) m+=it.mult; } for(const id of S.fx){ const it=SKINS.water.find(x=>x.id===id); if(it) m+=it.mult; } return m; };
+// every item you OWN boosts aura, equipped or not. collecting is the point.
+const itemMult=()=>{ let m=1; for(const cat of CATS) for(const it of SKINS[cat]) if(it.mult&&S.owned.has(cat+':'+it.id)) m+=it.mult; return m; };
 const hasFx=id=>S.fx.includes(id);
 // ---------- incremental upgrades ----------
 // nine pathways. costs grow exponentially, bonuses compound multiplicatively. all aura still comes from pouring.
@@ -507,7 +511,7 @@ function popup(text,kind,dy=0){ const el=document.createElement('div'); el.class
   // secondary popups (dy>0) stack under the main one's real height so wrapped text never overlaps
   if(dy>0&&S.lastPopY!=null) y=Math.max(y,S.lastPopY+S.lastPopH/2+18+(dy-54)); el.style.left=x+'px'; el.style.top=y+'px'; el.style.setProperty('--r',rand(-7,7).toFixed(1)+'deg'); if(kind==='perfect'||kind==='milestone') el.style.fontSize=Math.min((kind==='perfect'?58:50)*(1+Math.min(S.combo,12)*0.025),W*0.11)+'px'; elPops.appendChild(el); if(dy<=0){ S.lastPopY=y; S.lastPopH=el.offsetHeight; } setTimeout(()=>el.remove(),2000); }
 function bump(el){ el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); setTimeout(()=>el.classList.remove('bump'),160); }
-function updateHUD(){ elCombo.textContent='x'+S.combo; $('#lvl').textContent=`lv ${totalLvl()} · x${auraMult().toFixed(2)} aura`; elShopBtn.classList.toggle('can',canAffordAnyUpg()); elPrest.textContent=S.prestige>0?`★ prestige ${S.prestige}`:''; elPrest.hidden=S.prestige===0; $('#combo').classList.toggle('halo',S.halo); elCombo.classList.toggle('hot',S.combo>=3&&S.combo<10); elCombo.classList.toggle('insane',S.combo>=10); elStats.textContent=`${S.glasses} poured · ${S.perfects} perfect · best combo x${S.bestCombo} · v${VERSION}`; if(S.glasses>=3) elHint.style.opacity=0; }
+function updateHUD(){ elCombo.textContent='x'+S.combo; const sh=$('#shieldHud'); sh.hidden=lvl('shield')<1; sh.textContent=S.shieldReady?'🛡️ shield ready':`🛡️ recharging · ${S.shieldCd}`; sh.classList.toggle('ready',S.shieldReady); sh.classList.toggle('charging',!S.shieldReady); $('#lvl').textContent=`lv ${totalLvl()} · x${auraMult().toFixed(2)} aura`; elShopBtn.classList.toggle('can',canAffordAnyUpg()); elPrest.textContent=S.prestige>0?`★ prestige ${S.prestige}`:''; elPrest.hidden=S.prestige===0; $('#combo').classList.toggle('halo',S.halo); elCombo.classList.toggle('hot',S.combo>=3&&S.combo<10); elCombo.classList.toggle('insane',S.combo>=10); elStats.textContent=`${S.glasses} poured · ${S.perfects} perfect · best combo x${S.bestCombo} · v${VERSION}`; if(S.glasses>=3) elHint.style.opacity=0; }
 function showMod(){ if(S.mod){ const m=MODS.find(m=>m.id===S.mod); elMod.innerHTML=`<b>${m.label}</b><span class="mdesc">${m.desc}</span><span class="bonus">bonus x${modBonusOf(m).toFixed(2).replace(/\.?0+$/,'')} aura</span><button class="q" data-desc="${m.label} · ${m.desc}">?</button>`; elMod.classList.add('on'); SFX.mod(); } else elMod.classList.remove('on'); }
 elMod.addEventListener('click',e=>{ const q=e.target.closest('.q'); if(q){ e.stopPropagation(); toast(q.dataset.desc); SFX.click(); } });
 
@@ -540,7 +544,7 @@ function judge(forced){
   // spill shield: absorbs one fail, keeps combo + halo, then recharges over clean glasses
   const shielded=lost&&S.shieldReady;
   if(shielded){ S.shieldReady=false; S.shieldCd=shieldRecharge(); lost=false; }
-  else if(!lost&&lvl('shield')>0&&!S.shieldReady){ S.shieldCd--; if(S.shieldCd<=0){ S.shieldReady=true; schedule(0.9,()=>{ toast('spill shield ready 🛡️'); SFX.click(); }); } }
+  else if(!lost&&lvl('shield')>0&&!S.shieldReady){ S.shieldCd--; if(S.shieldCd<=0){ S.shieldReady=true; schedule(0.9,()=>{ toast('spill shield ready 🛡️'); SFX.click(); buzz(40); }); } }
   const comeback=tier==='perfect'&&S.justFailed;
   S.glasses++;
   switch(tier){
@@ -679,7 +683,7 @@ function renderShop(){
     html+=`<h3>${CAT_NAMES[cat]}</h3><div class="grid">`;
     for(const it of SKINS[cat]){ const owned=it.price===0||S.owned.has(cat+':'+it.id),eq=cat==='water'?hasFx(it.id):S.eq[cat]===it.id,poor=!owned&&S.aura<it.price;
       const status=eq?(cat==='water'?'on ✓':'equipped'):owned?(cat==='water'?'tap to turn on':'tap to equip'):fmtShort(it.price)+' ✨';
-      html+=`<button class="card${eq?' eq':''}${owned?' owned':''}${poor?' poor':''}" data-cat="${cat}" data-id="${it.id}"><span class="em">${it.emoji}</span><span class="nm">${it.name}</span>${it.mult?`<span class="mu">+${Math.round(it.mult*100)}% aura</span>`:''}<span class="pr">${status}</span></button>`; }
+      html+=`<button class="card${eq?' eq':''}${owned?' owned':''}${poor?' poor':''}" data-cat="${cat}" data-id="${it.id}"><span class="em">${it.emoji}</span><span class="nm">${it.name}</span>${it.mult?`<span class="mu">+${Math.round(it.mult*100)}% aura${owned?' ✓':''}</span>`:''}<span class="pr">${status}</span></button>`; }
     html+='</div>';
   }
   elShopBody.innerHTML=html;
@@ -912,8 +916,7 @@ function drawCup(){
 function drawShield(){
   if(lvl('shield')<1) return; const cx=gx(),cy=g.bottomY-g.h/2,t=S.time;
   ctx.save(); ctx.font='700 14px Fredoka,ui-rounded,sans-serif'; ctx.textAlign='left';
-  if(S.shieldReady){ const rx=g.tw*0.72+8,ry=g.h*0.6+8; const grd=ctx.createLinearGradient(cx-rx,cy-ry,cx+rx,cy+ry); grd.addColorStop(0,'rgba(155,231,255,0.05)'); grd.addColorStop(0.5,'rgba(155,231,255,0.18)'); grd.addColorStop(1,'rgba(155,231,255,0.05)'); ctx.fillStyle=grd; ctx.beginPath(); ctx.ellipse(cx,cy,rx,ry,0,0,Math.PI*2); ctx.fill(); ctx.strokeStyle=`rgba(155,231,255,${0.5+0.25*Math.sin(t*2.5)})`; ctx.lineWidth=2.5; ctx.stroke(); const a0=t*1.2; ctx.strokeStyle='rgba(255,255,255,0.7)'; ctx.lineWidth=4; ctx.beginPath(); ctx.ellipse(cx,cy,rx,ry,0,a0,a0+0.5); ctx.stroke(); ctx.fillStyle='rgba(155,231,255,0.95)'; ctx.fillText('🛡️ shield ready',cx-g.tw/2-4,g.bottomY-g.h-26); }
-  else { ctx.fillStyle='rgba(155,231,255,0.5)'; ctx.fillText(`🛡️ recharging · ${S.shieldCd}`,cx-g.tw/2-4,g.bottomY-g.h-26); }
+  if(S.shieldReady){ const rx=g.tw*0.72+8,ry=g.h*0.6+8; const grd=ctx.createLinearGradient(cx-rx,cy-ry,cx+rx,cy+ry); grd.addColorStop(0,'rgba(155,231,255,0.05)'); grd.addColorStop(0.5,'rgba(155,231,255,0.18)'); grd.addColorStop(1,'rgba(155,231,255,0.05)'); ctx.fillStyle=grd; ctx.beginPath(); ctx.ellipse(cx,cy,rx,ry,0,0,Math.PI*2); ctx.fill(); ctx.strokeStyle=`rgba(155,231,255,${0.5+0.25*Math.sin(t*2.5)})`; ctx.lineWidth=2.5; ctx.stroke(); const a0=t*1.2; ctx.strokeStyle='rgba(255,255,255,0.7)'; ctx.lineWidth=4; ctx.beginPath(); ctx.ellipse(cx,cy,rx,ry,0,a0,a0+0.5); ctx.stroke(); }
   ctx.restore();
 }
 function drawParticles(){
