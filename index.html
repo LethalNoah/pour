@@ -30,10 +30,11 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none;background:#06091
 #comboNum.hot{color:#ffb347;text-shadow:0 0 22px rgba(255,140,0,.8),0 0 50px rgba(255,140,0,.4)}
 #comboNum.insane{color:#ff4d6d;text-shadow:0 0 26px rgba(255,77,109,.9),0 0 60px rgba(255,200,0,.6)}
 #comboNum.bump{transform:scale(1.35) rotate(-4deg)}
-#vibe{position:absolute;left:50%;top:max(18px,env(safe-area-inset-top));transform:translateX(-50%);font-size:clamp(15px,2vw,20px);font-weight:700;letter-spacing:.08em;opacity:.95;white-space:nowrap;background:rgba(6,9,26,.55);border:1.5px solid rgba(255,255,255,.22);padding:10px 22px;border-radius:999px;box-shadow:0 8px 30px rgba(0,0,0,.25)}
+#vibe{position:absolute;left:50%;bottom:calc(max(16px,env(safe-area-inset-bottom)) + 78px);transform:translateX(-50%);font-size:clamp(15px,2vw,20px);font-weight:700;letter-spacing:.08em;opacity:.95;white-space:nowrap;background:rgba(6,9,26,.55);border:1.5px solid rgba(255,255,255,.22);padding:10px 22px;border-radius:999px;box-shadow:0 8px 30px rgba(0,0,0,.25)}
 #vibe.shift{animation:vibeShift .8s cubic-bezier(.2,1.6,.4,1)}
 @keyframes vibeShift{0%{transform:translateX(-50%) scale(.6);opacity:0}100%{transform:translateX(-50%) scale(1);opacity:.95}}
-#mod{position:absolute;left:50%;top:calc(max(18px,env(safe-area-inset-top)) + 64px);transform:translateX(-50%);text-align:center;font-size:clamp(13px,1.6vw,16px);opacity:0;transition:opacity .3s;white-space:nowrap;text-shadow:0 2px 12px rgba(0,0,0,.5)}
+#mod{position:absolute;left:50%;top:calc(max(18px,env(safe-area-inset-top)) + 10px);transform:translateX(-50%);text-align:center;font-size:clamp(13px,1.6vw,16px);opacity:0;transition:opacity .3s;white-space:nowrap;text-shadow:0 2px 12px rgba(0,0,0,.5)}
+#mod .q{display:none;pointer-events:auto;width:26px;height:26px;border-radius:50%;border:1.5px solid rgba(255,255,255,.4);background:rgba(255,255,255,.12);color:#fff;font-family:inherit;font-weight:700;font-size:14px;cursor:pointer;flex-shrink:0}
 #mod b{display:block;font-size:clamp(18px,2.4vw,24px);font-weight:700;letter-spacing:.02em}
 #mod.on{opacity:.95}
 #hint{position:absolute;left:50%;bottom:calc(max(16px,env(safe-area-inset-bottom)) + 44px);transform:translateX(-50%);font-size:clamp(15px,2vw,20px);font-weight:600;opacity:.85;letter-spacing:.04em;transition:opacity 1.2s;white-space:nowrap;text-shadow:0 2px 12px rgba(0,0,0,.5)}
@@ -47,17 +48,18 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none;background:#06091
   #aura,#combo{min-width:0;padding:8px 14px;border-radius:16px}
   #auraNum,#comboNum{font-size:34px}
   .lbl{font-size:11px}
-  #vibe{top:calc(max(14px,env(safe-area-inset-top)) + 74px);font-size:15px;padding:8px 18px}
-  #mod{top:calc(max(14px,env(safe-area-inset-top)) + 122px);background:rgba(0,0,0,.28);border:1.5px solid rgba(255,209,102,.35);border-radius:999px;padding:6px 14px;font-size:12px;display:flex;gap:8px;align-items:center}
+  #vibe{bottom:calc(max(14px,env(safe-area-inset-bottom)) + 112px);font-size:15px;padding:8px 18px}
+  #mod{top:calc(max(14px,env(safe-area-inset-top)) + 132px);background:rgba(6,9,26,.6);border:1.5px solid rgba(255,209,102,.35);border-radius:999px;padding:6px 8px 6px 14px;font-size:12px;display:flex;gap:8px;align-items:center}
   #mod b{display:inline;font-size:14px}
   #mod .mdesc{display:none}
   #mod .bonus{display:inline;margin:0;font-size:12px}
+  #mod .q{display:inline-flex;align-items:center;justify-content:center}
   #shopBtn,#mute{bottom:max(14px,env(safe-area-inset-bottom));height:52px}
   #shopBtn{font-size:16px;padding:0 18px}
   #mute{width:52px;font-size:22px}
   #stats{bottom:calc(max(14px,env(safe-area-inset-bottom)) + 66px);font-size:11px}
   #hint{bottom:calc(max(14px,env(safe-area-inset-bottom)) + 90px);font-size:15px}
-  #toast{bottom:calc(max(14px,env(safe-area-inset-bottom)) + 146px)!important;font-size:14px;padding:8px 14px}
+  #toast{bottom:calc(max(14px,env(safe-area-inset-bottom)) + 162px)!important;font-size:14px;padding:8px 14px}
   .pop{font-size:clamp(26px,8vw,44px)}
   .pop.perfect{font-size:clamp(30px,10vw,58px)}
   .pop.great{font-size:clamp(26px,8.5vw,46px)}
@@ -105,7 +107,7 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none;background:#06091
 #resetBtn:hover{color:#fff;border-color:rgba(255,255,255,.4)}
 #resetBtn.armed{color:#ff9c9c;border-color:#ff5c5c;background:rgba(255,92,92,.12)}
 .pop.brim{color:#8be9ff;font-size:24px}
-#toast{position:absolute;left:50%;bottom:calc(max(14px,env(safe-area-inset-bottom)) + 84px);transform:translateX(-50%) translateY(20px);opacity:0;background:rgba(6,9,26,.75);padding:10px 18px;border-radius:14px;font-size:15px;font-weight:600;transition:all .35s cubic-bezier(.2,1.4,.4,1);white-space:normal;text-align:center;max-width:min(92vw,520px);width:max-content;line-height:1.3}
+#toast{position:absolute;left:50%;bottom:calc(max(14px,env(safe-area-inset-bottom)) + 130px);transform:translateX(-50%) translateY(20px);opacity:0;background:rgba(6,9,26,.75);padding:10px 18px;border-radius:14px;font-size:15px;font-weight:600;transition:all .35s cubic-bezier(.2,1.4,.4,1);white-space:normal;text-align:center;max-width:min(92vw,520px);width:max-content;line-height:1.3}
 #toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 #pops{position:absolute;inset:0;overflow:hidden}
 .pop{position:absolute;transform:translate(-50%,-50%) scale(0);font-weight:700;font-size:44px;line-height:1.02;letter-spacing:-.02em;white-space:normal;text-align:center;max-width:92vw;width:max-content;filter:drop-shadow(0 0 2px rgba(0,0,0,.7)) drop-shadow(0 6px 24px rgba(0,0,0,.55));animation:popIn .7s cubic-bezier(.17,1.8,.4,1) forwards,popOut .45s ease-in .9s forwards;will-change:transform,opacity}
@@ -205,7 +207,7 @@ body.lowq #shopBtn.can::before{animation:none}
 <audio id="unlock" loop playsinline preload="auto" src="data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQAAAAA="></audio>
 <script>
 'use strict';
-const VERSION='1.4.1';
+const VERSION='1.4.2';
 const $=s=>document.querySelector(s);
 const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const IS_IOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
@@ -466,7 +468,7 @@ addEventListener('resize',resize);
 
 const glassSkin=()=>SKINS.glass.find(s=>s.id===S.eq.glass)||SKINS.glass[0];
 const cupSkin=()=>SKINS.cup.find(s=>s.id===S.eq.cup)||SKINS.cup[0];
-function layoutGlass(){ if(!g) return; const sk=glassSkin(),base=W<=640?Math.min(W*0.64,H*0.42):Math.min(W*0.5,H*0.4); let h=base*g.hs*(sk.hs||1); const topMin=(W<=640?262:160)+100*S.cupScale+20,bottomMax=H*0.84; h=Math.max(80,Math.min(h,bottomMax-topMin)); g.h=h; g.tw=Math.min(base*0.62*g.ws*(sk.ws||1),W*0.8); g.bw=g.tw*sk.bw; g.cx=W/2; g.bottomY=Math.min(H*0.5+h/2+24,bottomMax); }
+function layoutGlass(){ if(!g) return; const sk=glassSkin(),base=W<=640?Math.min(W*0.64,H*0.42):Math.min(W*0.5,H*0.4); let h=base*g.hs*(sk.hs||1); const topMin=(W<=640?300:150)+100*S.cupScale+20,bottomMax=W<=640?H-205:Math.min(H*0.84,H-150); h=Math.max(80,Math.min(h,bottomMax-topMin)); g.h=h; g.tw=Math.min(base*0.62*g.ws*(sk.ws||1),W*0.8); g.bw=g.tw*sk.bw; g.cx=W/2; g.bottomY=Math.min(H*0.5+h/2+24,bottomMax); }
 // drunk line drifts only while the glass is idle or being poured; it freezes the instant you let go.
 const targetNow=()=>S.target>=1?1:clamp(S.target+(S.mod==='drunk'?Math.sin(S.driftT*1.6)*0.07:0),0.05,1);
 // brim targets (rim) get a wider window and clearance above the rim before it counts as a spill.
@@ -501,7 +503,8 @@ function popup(text,kind,dy=0){ const el=document.createElement('div'); el.class
   if(dy>0&&S.lastPopY!=null) y=Math.max(y,S.lastPopY+S.lastPopH/2+18+(dy-54)); el.style.left=x+'px'; el.style.top=y+'px'; el.style.setProperty('--r',rand(-7,7).toFixed(1)+'deg'); if(kind==='perfect'||kind==='milestone') el.style.fontSize=Math.min((kind==='perfect'?58:50)*(1+Math.min(S.combo,12)*0.025),W*0.11)+'px'; elPops.appendChild(el); if(dy<=0){ S.lastPopY=y; S.lastPopH=el.offsetHeight; } setTimeout(()=>el.remove(),2000); }
 function bump(el){ el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); setTimeout(()=>el.classList.remove('bump'),160); }
 function updateHUD(){ elCombo.textContent='x'+S.combo; $('#lvl').textContent=`lv ${totalLvl()} · x${auraMult().toFixed(2)} aura`; elShopBtn.classList.toggle('can',canAffordAnyUpg()); elPrest.textContent=S.prestige>0?`★ prestige ${S.prestige}`:''; elPrest.hidden=S.prestige===0; $('#combo').classList.toggle('halo',S.halo); elCombo.classList.toggle('hot',S.combo>=3&&S.combo<10); elCombo.classList.toggle('insane',S.combo>=10); elStats.textContent=`${S.glasses} poured · ${S.perfects} perfect · best combo x${S.bestCombo} · v${VERSION}`; if(S.glasses>=3) elHint.style.opacity=0; }
-function showMod(){ if(S.mod){ const m=MODS.find(m=>m.id===S.mod); elMod.innerHTML=`<b>${m.label}</b><span class="mdesc">${m.desc}</span><span class="bonus">bonus x${modBonusOf(m).toFixed(2).replace(/\.?0+$/,'')} aura</span>`; elMod.classList.add('on'); SFX.mod(); if(W<=640) toast(`${m.label} · ${m.desc}`); } else elMod.classList.remove('on'); }
+function showMod(){ if(S.mod){ const m=MODS.find(m=>m.id===S.mod); elMod.innerHTML=`<b>${m.label}</b><span class="mdesc">${m.desc}</span><span class="bonus">bonus x${modBonusOf(m).toFixed(2).replace(/\.?0+$/,'')} aura</span><button class="q" data-desc="${m.label} · ${m.desc}">?</button>`; elMod.classList.add('on'); SFX.mod(); } else elMod.classList.remove('on'); }
+elMod.addEventListener('click',e=>{ const q=e.target.closest('.q'); if(q){ e.stopPropagation(); toast(q.dataset.desc); SFX.click(); } });
 
 // ---------- flow ----------
 function startGame(){ SFX.init(); SFX.resume(); $('#unlock').play().catch(()=>{}); elTitle.classList.add('off'); S.screen='play'; load(); S.cupY=H*0.25; newGlass(true); updateHUD(); SFX.click(); if(S.halo) setTier(TIERS.length-1); }
@@ -593,7 +596,7 @@ function newSlotGlass(){
   const total=PRIZES.reduce((a,p)=>a+p.w,0); let roll=Math.random()*total, prize=PRIZES[0]; for(const p of PRIZES){ if(roll<p.w){ prize=p; break; } roll-=p.w; }
   const nothing=prize.e==='💀'; let syms; if(nothing){ const pool=PRIZES.filter(p=>p.e!=='💀'&&p.e!=='🎰').map(p=>p.e).sort(()=>Math.random()-0.5); syms=[pool[0],pool[1],'💀']; } else syms=[prize.e,prize.e,prize.e];
   S.slot={prize,nothing,syms,revealed:[false,false,false],revealT:[0,0,0],hold:false,done:false};
-  elMod.innerHTML=`<b>🎰 slot glass</b><span class="mdesc">hold to chug. three symbols. one prize.</span><span class="bonus">x${S.combo} milestone</span>`; elMod.classList.add('on'); SFX.mod(); if(W<=640) toast('🎰 slot glass · hold to chug it down');
+  elMod.innerHTML=`<b>🎰 slot glass</b><span class="mdesc">hold to chug. three symbols. one prize.</span><span class="bonus">x${S.combo} milestone</span><button class="q" data-desc="🎰 slot glass · hold to chug it down. three symbols surface. one prize.">?</button>`; elMod.classList.add('on'); SFX.mod(); if(W<=640) toast('🎰 slot glass · hold to chug it down');
 }
 function finishSlot(){
   const sl=S.slot, prize=sl.prize; sl.done=true; sl.hold=false; SFX.setPour(false);
@@ -643,7 +646,7 @@ function spill(){ const top=g.bottomY-g.h; for(let i=0;i<40;i++){ const side=i%2
 function toggleMute(){ SFX.setMuted(!SFX.muted); elMute.textContent=SFX.muted?'🔇':'🔊'; }
 
 // ---------- input ----------
-document.addEventListener('pointerdown',e=>{ if(e.target.closest&&e.target.closest('#mute,#shopBtn,#shop,#toast,#installBtn')) return; e.preventDefault(); onDown(); });
+document.addEventListener('pointerdown',e=>{ if(e.target.closest&&e.target.closest('#mute,#shopBtn,#shop,#toast,#installBtn,#mod .q')) return; e.preventDefault(); onDown(); });
 // safety net: if the mouse button is already up while we're still pouring (missed pointerup during a hitch), release
 document.addEventListener('pointermove',e=>{ if(S.phase==='pouring'&&e.pointerType==='mouse'&&e.buttons===0&&!S.keyHeld){ DBG.lostReleases++; onUp(); } },{passive:true});
 elToast.addEventListener('pointerdown',e=>e.stopPropagation());
