@@ -49,7 +49,7 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none;background:#06091
   #auraNum,#comboNum{font-size:34px}
   .lbl{font-size:11px}
   #vibe{bottom:calc(max(14px,env(safe-area-inset-bottom)) + 112px);font-size:15px;padding:8px 18px}
-  #mod{top:calc(max(14px,env(safe-area-inset-top)) + 132px);background:rgba(6,9,26,.6);border:1.5px solid rgba(255,209,102,.35);border-radius:999px;padding:6px 8px 6px 14px;font-size:12px;display:flex;gap:8px;align-items:center}
+  #mod{top:calc(max(14px,env(safe-area-inset-top)) + 132px);background:rgba(6,9,26,.6);border:1.5px solid rgba(255,209,102,.35);border-radius:999px;padding:6px 8px 6px 14px;font-size:12px;display:flex;gap:8px;align-items:center;white-space:nowrap;max-width:94vw;justify-content:center}
   #mod b{display:inline;font-size:14px}
   #mod .mdesc{display:none}
   #mod .bonus{display:inline;margin:0;font-size:12px}
@@ -225,7 +225,7 @@ body.lowq #shopBtn.can::before{animation:none}
 <audio id="unlock" loop playsinline preload="auto"></audio>
 <script>
 'use strict';
-const VERSION='1.7.0';
+const VERSION='1.7.1';
 const $=s=>document.querySelector(s);
 const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const IS_IOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
@@ -632,7 +632,7 @@ function popup(text,kind,dy=0,center=false){ const el=document.createElement('di
   if(dy>0&&S.lastPopY!=null) y=Math.max(y,S.lastPopY+S.lastPopH/2+18+(dy-54)); el.style.left=x+'px'; el.style.top=y+'px'; el.style.setProperty('--r',rand(-7,7).toFixed(1)+'deg'); if(kind==='perfect'||kind==='milestone') el.style.fontSize=Math.min((kind==='perfect'?58:50)*(1+Math.min(S.combo,12)*0.025),W<=640?W*0.085:W*0.11)+'px'; elPops.appendChild(el); if(dy<=0){ S.lastPopY=y; S.lastPopH=el.offsetHeight; } setTimeout(()=>el.remove(),2000); }
 function bump(el){ el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); setTimeout(()=>el.classList.remove('bump'),160); }
 function updateHUD(){ elCombo.textContent='x'+S.combo; elVibe.textContent=vibeText(); $('#spotLine').innerHTML=spotLineText(); const sh=$('#shieldHud'); sh.hidden=lvl('shield')<1; sh.textContent=S.shieldReady?'🛡️ shield ready':`🛡️ recharging · ${S.shieldCd}`; sh.classList.toggle('ready',S.shieldReady); sh.classList.toggle('charging',!S.shieldReady); $('#lvl').textContent=`lv ${totalLvl()} · x${auraMult().toFixed(2)} aura`; elShopBtn.classList.toggle('can',canAffordAnyUpg()); elPrest.textContent=S.prestige>0?`★ prestige ${S.prestige}`:''; elPrest.hidden=S.prestige===0; $('#combo').classList.toggle('halo',S.halo); elCombo.classList.toggle('hot',S.combo>=3&&S.combo<10); elCombo.classList.toggle('insane',S.combo>=10); elStats.textContent=`${S.glasses} poured · ${S.perfects} perfect · best combo x${S.bestCombo} · v${VERSION}`; if(S.glasses>=3) elHint.style.opacity=0; }
-function showMod(){ if(S.mods.length){ const ms=S.mods.map(id=>MODS.find(m=>m.id===id)); const bonus=ms.reduce((a,m)=>a*modBonusOf(m),1); const multi=ms.length>1; elMod.innerHTML=`<b>${multi?'⚡'.repeat(ms.length-1)+' ':''}${ms.map(m=>m.label).join(' + ')}</b><span class="mdesc">${ms.map(m=>m.desc).join(' ')}</span><span class="bonus">bonus x${bonus.toFixed(2).replace(/\.?0+$/,'')} aura${multi?' · '+ms.length+'x stack':''}</span><button class="q" data-desc="${ms.map(m=>m.label+' · '+m.desc).join('  |  ')}">?</button>`; elMod.classList.add('on'); SFX.mod(); if(multi){ schedule(0.3,()=>{ toast(`${ms.length===3?'TRIPLE':'DOUBLE'} CHALLENGE ⚡ x${bonus.toFixed(2).replace(/\.?0+$/,'')} aura`); SFX.ascend(Math.min(S.tier+1,TIERS.length-1)); buzz([30,30,30]); }); } } else elMod.classList.remove('on'); }
+function showMod(){ if(S.mods.length){ const ms=S.mods.map(id=>MODS.find(m=>m.id===id)); const bonus=ms.reduce((a,m)=>a*modBonusOf(m),1); const multi=ms.length>1; const compact=W<=640&&multi; const names=compact?ms.map(m=>m.label.trim().split(' ').pop()).join(' + ')+' ⚡':(multi?'⚡'.repeat(ms.length-1)+' ':'')+ms.map(m=>m.label).join(' + '); elMod.innerHTML=`<b>${names}</b><span class="mdesc">${ms.map(m=>m.desc).join(' ')}</span><span class="bonus">${compact?'x'+bonus.toFixed(2).replace(/\.?0+$/,'')+' aura':'bonus x'+bonus.toFixed(2).replace(/\.?0+$/,'')+' aura'+(multi?' · '+ms.length+'x stack':'')}</span><button class="q" data-desc="${ms.map(m=>m.label+' · '+m.desc).join('  |  ')}">?</button>`; elMod.classList.add('on'); SFX.mod(); if(multi){ schedule(0.3,()=>{ toast(`${ms.length===3?'TRIPLE':'DOUBLE'} CHALLENGE ⚡ x${bonus.toFixed(2).replace(/\.?0+$/,'')} aura`); SFX.ascend(Math.min(S.tier+1,TIERS.length-1)); buzz([30,30,30]); }); } } else elMod.classList.remove('on'); }
 const hasMod=id=>S.mods.includes(id);
 const EXCLUSIVE=[['shot','gulp'],['speed','slowmo'],['nocap','drunk'],['nocap','shot'],['nocap','leaky']];
 function rollMods(){
@@ -738,7 +738,7 @@ function newSlotGlass(){
   const total=PRIZES.reduce((a,p)=>a+p.w,0); let roll=Math.random()*total, prize=PRIZES[0]; for(const p of PRIZES){ if(roll<p.w){ prize=p; break; } roll-=p.w; }
   const nothing=prize.e==='💀'; let syms; if(nothing){ const pool=PRIZES.filter(p=>p.e!=='💀'&&p.e!=='🎰').map(p=>p.e).sort(()=>Math.random()-0.5); syms=[pool[0],pool[1],'💀']; } else syms=[prize.e,prize.e,prize.e];
   S.slot={prize,nothing,syms,revealed:[false,false,false],revealT:[0,0,0],hold:false,done:false};
-  elMod.innerHTML=`<b>🎰 slot glass</b><span class="mdesc">hold to chug. three symbols. one prize.</span><span class="bonus">x${S.combo} milestone</span><button class="q" data-desc="🎰 slot glass · hold to chug it down. three symbols surface. one prize.">?</button>`; elMod.classList.add('on'); SFX.mod(); if(W<=640) toast('🎰 slot glass · hold to chug it down');
+  elMod.innerHTML=`<b>🎰 slot glass</b><span class="mdesc">hold to chug. three symbols. one prize.</span><span class="bonus">x${S.combo} milestone</span><button class="q" data-desc="🎰 slot glass · hold to chug it down. three symbols surface. one prize.">?</button>`; elMod.classList.add('on'); SFX.mod();
 }
 function finishSlot(){
   const sl=S.slot, prize=sl.prize; sl.done=true; sl.hold=false; SFX.setPour(false);
@@ -990,7 +990,7 @@ function drawScene(b,L,sp,t){
     b.fillStyle=rgba(lerpC(mid,[40,90,50],0.35*light+0.1)); for(let i=0;i<9;i++){ const x=hash(i,19)*W, r=m*(0.05+0.07*hash(i,23)); b.beginPath(); b.ellipse(x,horizon+6,r,r*0.55,0,Math.PI,Math.PI*2); b.fill(); }
     b.strokeStyle=rgba(lerpC(near,[255,255,255],0.12)); b.lineWidth=m*0.05; b.beginPath(); b.moveTo(W*0.5,H); b.quadraticCurveTo(W*0.62,H*0.8,W*0.85,horizon+4); b.stroke(); }
   else if(st>=4){ b.fillStyle=rgba(near); b.fillRect(0,H*0.72,W,H*0.28); b.strokeStyle=rgba(lerpC(near,[255,255,255],0.35)); b.lineWidth=4; b.beginPath(); b.moveTo(0,H*0.7); b.lineTo(W,H*0.7); b.stroke(); b.lineWidth=3; for(let i=0;i<=10;i++){ const x=i/10*W; b.beginPath(); b.moveTo(x,H*0.7); b.lineTo(x,H*0.6); b.stroke(); } b.beginPath(); b.moveTo(0,H*0.6); b.lineTo(W,H*0.6); b.stroke(); }
-  else { const ww=W*(0.34+0.1*st), wh=H*(0.26+0.06*st), wx=W*0.5-ww/2, wy=H*0.34-wh/2, wall='rgb(9,9,18)'; b.fillStyle=wall; b.fillRect(0,0,W,wy); b.fillRect(0,wy+wh,W,H-wy-wh); b.fillRect(0,wy,wx,wh); b.fillRect(wx+ww,wy,W-wx-ww,wh);
+  else { const ww=W*(0.36+0.1*st), wh=H*(0.2+0.04*st), wx=W*0.5-ww/2, wy=H*0.22-wh/2, wall='rgb(9,9,18)'; b.fillStyle=wall; b.fillRect(0,0,W,wy); b.fillRect(0,wy+wh,W,H-wy-wh); b.fillRect(0,wy,wx,wh); b.fillRect(wx+ww,wy,W-wx-ww,wh);
     b.strokeStyle='rgba(200,190,170,0.5)'; b.lineWidth=6; b.strokeRect(wx,wy,ww,wh); b.lineWidth=3; b.beginPath(); b.moveTo(wx+ww/2,wy); b.lineTo(wx+ww/2,wy+wh); b.moveTo(wx,wy+wh/2); b.lineTo(wx+ww,wy+wh/2); b.stroke(); b.fillStyle='rgba(60,50,45,0.95)'; b.fillRect(wx-16,wy+wh,ww+32,12);
     const glow=b.createRadialGradient(W*0.5,wy+wh*0.5,0,W*0.5,wy+wh*0.5,ww); glow.addColorStop(0,rgba(L.top,0.25*light+0.05)); glow.addColorStop(1,'rgba(0,0,0,0)'); b.fillStyle=glow; b.fillRect(0,0,W,H); }
   if(st>=3){ b.strokeStyle='rgba(120,100,70,0.6)'; b.lineWidth=1.5; b.beginPath(); b.moveTo(0,H*0.12); b.quadraticCurveTo(W*0.5,H*0.2,W,H*0.12); b.stroke(); for(let i=1;i<12;i++){ const u=i/12, x=W*u, y=H*0.12+ (4*u*(1-u))*H*0.04; b.fillStyle=light<0.5?'rgba(255,214,120,0.95)':'rgba(255,214,120,0.5)'; b.beginPath(); b.arc(x,y+6,3.5,0,Math.PI*2); b.fill(); if(light<0.5){ const g2=b.createRadialGradient(x,y+6,0,x,y+6,22); g2.addColorStop(0,'rgba(255,200,100,0.35)'); g2.addColorStop(1,'rgba(255,200,100,0)'); b.fillStyle=g2; b.fillRect(x-22,y-16,44,44); } } }
@@ -1001,6 +1001,8 @@ function drawScene(b,L,sp,t){
   drawPlant(b,plantPos(),st,sp.since,sp.streak,light,t);
   if(st>=2){ const p2={x:W-plantPos().x,y:plantPos().y+6}; b.save(); b.translate(p2.x,p2.y); b.scale(0.6,0.6); b.translate(-p2.x,-p2.y); drawPlant(b,p2,Math.max(0,st-2),sp.since,0,light,t+2); b.restore(); }
   b.fillStyle=`rgba(0,0,0,${((1-L.bright)*0.62).toFixed(3)})`; b.fillRect(0,0,W,H);
+  // keep the glass the subject: a soft dark band behind the glass + cup, scene stays visible around the edges
+  if(g){ const cy=g.bottomY-g.h*0.5-50*S.cupScale, rx=Math.max(g.tw*1.05,m*0.22), ry=g.h*0.5+60*S.cupScale+40; const dg=b.createRadialGradient(W/2,cy,0,W/2,cy,1); b.save(); b.translate(W/2,cy); b.scale(rx,ry); dg.addColorStop(0,'rgba(2,3,10,0.6)'); dg.addColorStop(0.7,'rgba(2,3,10,0.42)'); dg.addColorStop(1,'rgba(2,3,10,0)'); b.fillStyle=dg; b.fillRect(-1,-1,2,2); b.restore(); }
   for(let i=0;i<3;i++){ const x=W*(0.2+0.3*i)+Math.sin(t*0.13+i*2)*W*0.15, y=H*(0.3+0.2*i)+Math.cos(t*0.11+i)*H*0.15, r=m*0.45; const rg=b.createRadialGradient(x,y,0,x,y,r); rg.addColorStop(0,rgba(col.glow,0.06+0.08*L.k)); rg.addColorStop(1,rgba(col.glow,0)); b.fillStyle=rg; b.fillRect(x-r,y-r,r*2,r*2); }
   const vg=b.createRadialGradient(W/2,H/2,m*0.35,W/2,H/2,Math.max(W,H)*0.75); vg.addColorStop(0,'rgba(0,0,0,0)'); vg.addColorStop(1,'rgba(0,0,0,0.4)'); b.fillStyle=vg; b.fillRect(0,0,W,H);
 }
@@ -1012,7 +1014,7 @@ function drawSceneLive(L,sp,t){
 function drawBG(){
   if(!canvas.width||!canvas.height) return;
   const t=S.time, L=sceneLight(), sp=spot();
-  const key=[L.top.map(v=>v|0),L.bot.map(v=>v|0),col.glow.map(v=>v|0),sp.stage,sp.since,sp.streak,Math.round(L.h*20),Math.round(L.bright*30)].join();
+  const key=[L.top.map(v=>v|0),L.bot.map(v=>v|0),col.glow.map(v=>v|0),sp.stage,sp.since,sp.streak,Math.round(L.h*20),Math.round(L.bright*30),g?Math.round(g.bottomY)+'/'+Math.round(g.h)+'/'+Math.round(g.tw):0].join();
   if(t-bgAt>0.12||key!==bgKey||bgc.width!==canvas.width){
     bgAt=t; bgKey=key; const dpr=canvas.width/W; if(bgc.width!==canvas.width||bgc.height!==canvas.height){ bgc.width=canvas.width; bgc.height=canvas.height; }
     const b=bgc.getContext('2d'); b.setTransform(dpr,0,0,dpr,0,0); drawScene(b,L,sp,t);
