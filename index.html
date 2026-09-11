@@ -59,18 +59,18 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none;background:#06091
   #mute{width:52px;font-size:22px}
   #stats{bottom:calc(max(14px,env(safe-area-inset-bottom)) + 66px);font-size:11px}
   #hint{bottom:calc(max(14px,env(safe-area-inset-bottom)) + 90px);font-size:15px}
-  #toast{bottom:calc(max(14px,env(safe-area-inset-bottom)) + 162px)!important;font-size:14px;padding:8px 14px}
-  .pop{font-size:clamp(26px,8vw,44px)}
-  .pop.perfect{font-size:clamp(30px,10vw,58px)}
-  .pop.great{font-size:clamp(26px,8.5vw,46px)}
-  .pop.good{font-size:clamp(22px,7vw,36px)}
-  .pop.miss{font-size:clamp(24px,8vw,42px)}
-  .pop.over{font-size:clamp(28px,9.5vw,56px)}
-  .pop.milestone{font-size:clamp(28px,9vw,50px)}
-  .pop.back{font-size:clamp(34px,11vw,100px)}
-  .pop.back.small{font-size:clamp(28px,9vw,72px)}
-  .pop.pts{font-size:clamp(18px,5.5vw,26px)}
-  .pop.bonus,.pop.brim{font-size:clamp(15px,4.5vw,22px)}
+  #toast{bottom:calc(max(14px,env(safe-area-inset-bottom)) + 204px)!important;font-size:14px;padding:8px 14px}
+  .pop{font-size:clamp(22px,6.5vw,38px)}
+  .pop.perfect{font-size:clamp(26px,8.5vw,50px)}
+  .pop.great{font-size:clamp(22px,7vw,40px)}
+  .pop.good{font-size:clamp(19px,6vw,32px)}
+  .pop.miss{font-size:clamp(20px,6.5vw,36px)}
+  .pop.over{font-size:clamp(24px,8vw,48px)}
+  .pop.milestone{font-size:clamp(24px,7.5vw,44px)}
+  .pop.back{font-size:clamp(30px,9.5vw,80px)}
+  .pop.back.small{font-size:clamp(24px,7.5vw,60px)}
+  .pop.pts{font-size:clamp(16px,5vw,22px)}
+  .pop.bonus,.pop.brim{font-size:clamp(13px,4vw,19px)}
 }
 #shopBtn:hover,#mute:hover{transform:translateY(-2px) scale(1.04)}
 #shopBtn:active,#mute:active{transform:scale(.96)}
@@ -144,7 +144,7 @@ html,body{height:100%;overflow:hidden;overscroll-behavior:none;background:#06091
 #don span{font-size:11px;letter-spacing:.16em;text-transform:uppercase;opacity:.8}
 #don i{position:absolute;left:0;bottom:0;height:4px;width:var(--left,100%);background:#fff;opacity:.8}
 @keyframes donPulse{0%,100%{transform:translateX(-50%) scale(1)}50%{transform:translateX(-50%) scale(1.06)}}
-@media (max-width:640px){#don{bottom:calc(max(14px,env(safe-area-inset-bottom)) + 200px)}}
+@media (max-width:640px){#don{bottom:calc(max(14px,env(safe-area-inset-bottom)) + 156px);padding:7px 16px 9px;border-width:1.5px}#don b{font-size:15px}#don span{font-size:9px}#don i{height:3px}}
 #flash{position:fixed;inset:0;background:radial-gradient(circle at 50% 45%,#fff,#ffe9b0 40%,rgba(255,150,60,.6) 70%,transparent);opacity:0;pointer-events:none;z-index:15}
 #flash.on{animation:flashAnim .8s ease-out forwards}
 @keyframes flashAnim{0%{opacity:.95}100%{opacity:0}}
@@ -222,7 +222,7 @@ body.lowq #shopBtn.can::before{animation:none}
 <audio id="unlock" loop playsinline preload="auto"></audio>
 <script>
 'use strict';
-const VERSION='1.6.3';
+const VERSION='1.6.4';
 const $=s=>document.querySelector(s);
 const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const IS_IOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
@@ -576,7 +576,7 @@ let toastT=null;
 function toast(msg){ elToast.textContent=msg; elToast.classList.add('on'); clearTimeout(toastT); toastT=setTimeout(()=>elToast.classList.remove('on'),2600); }
 function popup(text,kind,dy=0,center=false){ const el=document.createElement('div'); el.className='pop '+kind; el.textContent=text; const x=(g&&!center)?clamp(gx(),W*0.25,W*0.75):W/2; let y=(g?g.bottomY-g.h*0.55:H/2)+dy;
   // secondary popups (dy>0) stack under the main one's real height so wrapped text never overlaps
-  if(dy>0&&S.lastPopY!=null) y=Math.max(y,S.lastPopY+S.lastPopH/2+18+(dy-54)); el.style.left=x+'px'; el.style.top=y+'px'; el.style.setProperty('--r',rand(-7,7).toFixed(1)+'deg'); if(kind==='perfect'||kind==='milestone') el.style.fontSize=Math.min((kind==='perfect'?58:50)*(1+Math.min(S.combo,12)*0.025),W*0.11)+'px'; elPops.appendChild(el); if(dy<=0){ S.lastPopY=y; S.lastPopH=el.offsetHeight; } setTimeout(()=>el.remove(),2000); }
+  if(dy>0&&S.lastPopY!=null) y=Math.max(y,S.lastPopY+S.lastPopH/2+18+(dy-54)); el.style.left=x+'px'; el.style.top=y+'px'; el.style.setProperty('--r',rand(-7,7).toFixed(1)+'deg'); if(kind==='perfect'||kind==='milestone') el.style.fontSize=Math.min((kind==='perfect'?58:50)*(1+Math.min(S.combo,12)*0.025),W<=640?W*0.085:W*0.11)+'px'; elPops.appendChild(el); if(dy<=0){ S.lastPopY=y; S.lastPopH=el.offsetHeight; } setTimeout(()=>el.remove(),2000); }
 function bump(el){ el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); setTimeout(()=>el.classList.remove('bump'),160); }
 function updateHUD(){ elCombo.textContent='x'+S.combo; const sh=$('#shieldHud'); sh.hidden=lvl('shield')<1; sh.textContent=S.shieldReady?'🛡️ shield ready':`🛡️ recharging · ${S.shieldCd}`; sh.classList.toggle('ready',S.shieldReady); sh.classList.toggle('charging',!S.shieldReady); $('#lvl').textContent=`lv ${totalLvl()} · x${auraMult().toFixed(2)} aura`; elShopBtn.classList.toggle('can',canAffordAnyUpg()); elPrest.textContent=S.prestige>0?`★ prestige ${S.prestige}`:''; elPrest.hidden=S.prestige===0; $('#combo').classList.toggle('halo',S.halo); elCombo.classList.toggle('hot',S.combo>=3&&S.combo<10); elCombo.classList.toggle('insane',S.combo>=10); elStats.textContent=`${S.glasses} poured · ${S.perfects} perfect · best combo x${S.bestCombo} · v${VERSION}`; if(S.glasses>=3) elHint.style.opacity=0; }
 function showMod(){ if(S.mods.length){ const ms=S.mods.map(id=>MODS.find(m=>m.id===id)); const bonus=ms.reduce((a,m)=>a*modBonusOf(m),1); const multi=ms.length>1; elMod.innerHTML=`<b>${multi?'⚡'.repeat(ms.length-1)+' ':''}${ms.map(m=>m.label).join(' + ')}</b><span class="mdesc">${ms.map(m=>m.desc).join(' ')}</span><span class="bonus">bonus x${bonus.toFixed(2).replace(/\.?0+$/,'')} aura${multi?' · '+ms.length+'x stack':''}</span><button class="q" data-desc="${ms.map(m=>m.label+' · '+m.desc).join('  |  ')}">?</button>`; elMod.classList.add('on'); SFX.mod(); if(multi){ schedule(0.3,()=>{ toast(`${ms.length===3?'TRIPLE':'DOUBLE'} CHALLENGE ⚡ x${bonus.toFixed(2).replace(/\.?0+$/,'')} aura`); SFX.ascend(Math.min(S.tier+1,TIERS.length-1)); buzz([30,30,30]); }); } } else elMod.classList.remove('on'); }
