@@ -225,7 +225,7 @@ body.lowq #shopBtn.can::before{animation:none}
 <audio id="unlock" loop playsinline preload="auto"></audio>
 <script>
 'use strict';
-const VERSION='1.7.5';
+const VERSION='1.7.6';
 const $=s=>document.querySelector(s);
 const REDUCED=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const IS_IOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
@@ -976,6 +976,9 @@ function drawPlant(b,p,st,since,streak,light,t){
   if(streak>=3){ const fl=Math.min(streak-2,8); for(let i=0;i<fl;i++){ const f=0.3+0.65*hash(i,3), ly=-4*k-f*hgt*(1-droop*0.35), lx=sway*140*k*f+(hash(i,5)-0.5)*40*k; b.fillStyle=streak>=7?'#ffd166':'#ff8fb1'; b.beginPath(); b.arc(lx,ly,3.5*k,0,Math.PI*2); b.fill(); b.fillStyle='rgba(255,255,255,0.7)'; b.beginPath(); b.arc(lx,ly,1.2*k,0,Math.PI*2); b.fill(); } }
   b.restore();
 }
+function drawClouds(b,x0,y0,x1,y1,light,t){ const a=clamp((light-0.4)/0.35,0,1); if(a<=0) return; const w=x1-x0, hgt=y1-y0; b.save(); b.beginPath(); b.rect(x0,y0,w,hgt); b.clip();
+  for(let i=0;i<5;i++){ const sp=0.005+0.004*hash(i,53), cx=x0+((hash(i,47)+t*sp)%1.2-0.1)*w, cy=y0+hgt*(0.05+0.42*hash(i,59)), r=Math.min(w,hgt)*(0.035+0.045*hash(i,61)); b.fillStyle=`rgba(255,255,255,${(0.12+0.12*hash(i,67))*a})`; for(const [ox,oy,rr] of [[0,0,1],[-1.1,0.15,0.75],[1.1,0.1,0.8],[0.4,-0.45,0.7],[-0.5,-0.35,0.6]]){ b.beginPath(); b.ellipse(cx+ox*r,cy+oy*r,r*rr*1.5,r*rr*0.85,0,0,Math.PI*2); b.fill(); } }
+  b.restore(); }
 function drawScene(b,L,sp,t){
   const st=sp.stage, light=L.light, h=L.h, m=Math.min(W,H), horizon=H*0.66;
   const grd=b.createLinearGradient(0,0,0,H); grd.addColorStop(0,rgba(L.top)); grd.addColorStop(1,rgba(L.bot)); b.fillStyle=grd; b.fillRect(0,0,W,H);
@@ -983,6 +986,7 @@ function drawScene(b,L,sp,t){
   const isDay=h>=6&&h<19.5, frac=isDay?(h-6)/13.5:((h+24-19.5)%24)/10.5, ang=Math.PI*(1-frac), sx=W*0.5+Math.cos(ang)*W*0.45, sy=horizon-Math.sin(ang)*H*0.55;
   if(isDay){ const rg=b.createRadialGradient(sx,sy,0,sx,sy,m*0.28); rg.addColorStop(0,'rgba(255,240,200,0.28)'); rg.addColorStop(0.25,'rgba(255,220,150,0.08)'); rg.addColorStop(1,'rgba(255,200,120,0)'); b.fillStyle=rg; b.fillRect(sx-m*0.28,sy-m*0.28,m*0.56,m*0.56); b.fillStyle='rgba(255,250,230,0.85)'; b.beginPath(); b.arc(sx,sy,m*0.03,0,Math.PI*2); b.fill(); }
   else { b.fillStyle='rgba(235,240,255,0.92)'; b.beginPath(); b.arc(sx,sy,m*0.03,0,Math.PI*2); b.fill(); b.fillStyle=rgba(L.top,0.92); b.beginPath(); b.arc(sx+m*0.012,sy-m*0.008,m*0.026,0,Math.PI*2); b.fill(); }
+  if(st>=4&&st<13) drawClouds(b,0,H*0.05,W,horizon-H*0.1,light,t);
   const dark=(c,a)=>rgba(lerpC(c,[0,0,0],a)), far=lerpC(L.bot,[10,8,30],0.45), mid=lerpC(L.bot,[8,10,24],0.6), near=lerpC(L.bot,[4,6,16],0.72);
   if(st>=12){ b.fillStyle=rgba(lerpC(L.bot,[30,20,60],0.4)); b.beginPath(); b.moveTo(0,horizon); for(let i=0;i<=8;i++){ const x=i/8*W, y=horizon-H*(0.06+0.16*Math.abs(Math.sin(i*1.7+0.4))); b.lineTo(x-W/16,y); b.lineTo(x,horizon-H*0.05); } b.lineTo(W,horizon); b.closePath(); b.fill(); }
   if(st>=10){ b.fillStyle=rgba(far); b.beginPath(); b.moveTo(0,horizon); for(let i=0;i<=28;i++){ const x=i/28*W, hh=H*(0.05+0.06*hash(i,7)); b.lineTo(x-W/56,horizon); b.lineTo(x,horizon-hh); } b.lineTo(W,horizon); b.closePath(); b.fill(); }
@@ -994,7 +998,8 @@ function drawScene(b,L,sp,t){
   else { const ww=W*(0.36+0.1*st), wh=H*(0.2+0.04*st), wx=W*0.5-ww/2, wy=H*0.22-wh/2;
     const pure=skyAt(h); const wg=b.createLinearGradient(0,wy,0,wy+wh); wg.addColorStop(0,rgba(pure.top)); wg.addColorStop(1,rgba(pure.bot)); b.fillStyle=wg; b.fillRect(wx,wy,ww,wh);
     if(pure.light<0.4){ b.save(); b.beginPath(); b.rect(wx,wy,ww,wh); b.clip(); b.fillStyle='#fff'; for(let i=0;i<40;i++){ const x=wx+hash(i,1)*ww, y=wy+hash(i,2)*wh*0.8; b.globalAlpha=(0.4-pure.light)/0.4*(0.35+0.65*Math.abs(Math.sin(t*1.5+i))); b.beginPath(); b.arc(x,y,0.8+(i%3)*0.5,0,Math.PI*2); b.fill(); } b.globalAlpha=1; b.fillStyle='rgba(235,240,255,0.92)'; b.beginPath(); b.arc(wx+ww*0.72,wy+wh*0.3,m*0.022,0,Math.PI*2); b.fill(); b.fillStyle=rgba(pure.top,0.92); b.beginPath(); b.arc(wx+ww*0.72+m*0.009,wy+wh*0.3-m*0.006,m*0.019,0,Math.PI*2); b.fill(); b.restore(); }
-    else if(pure.light>0.5){ b.save(); b.beginPath(); b.rect(wx,wy,ww,wh); b.clip(); const sg=b.createRadialGradient(wx+ww*0.7,wy+wh*0.3,0,wx+ww*0.7,wy+wh*0.3,ww*0.5); sg.addColorStop(0,'rgba(255,240,200,0.8)'); sg.addColorStop(0.12,'rgba(255,230,170,0.35)'); sg.addColorStop(1,'rgba(255,220,150,0)'); b.fillStyle=sg; b.fillRect(wx,wy,ww,wh); b.restore(); }
+    drawClouds(b,wx,wy,wx+ww,wy+wh,pure.light,t);
+    if(pure.light>0.5){ b.save(); b.beginPath(); b.rect(wx,wy,ww,wh); b.clip(); const sg=b.createRadialGradient(wx+ww*0.7,wy+wh*0.3,0,wx+ww*0.7,wy+wh*0.3,ww*0.5); sg.addColorStop(0,'rgba(255,240,200,0.8)'); sg.addColorStop(0.12,'rgba(255,230,170,0.35)'); sg.addColorStop(1,'rgba(255,220,150,0)'); b.fillStyle=sg; b.fillRect(wx,wy,ww,wh); b.restore(); }
     const wallG=b.createLinearGradient(0,0,0,H); wallG.addColorStop(0,rgba(sat(lerpC(col.bg0,[0,0,0],0.12),L.sv))); wallG.addColorStop(1,rgba(sat(lerpC(col.bg1,[0,0,0],0.05),L.sv))); b.fillStyle=wallG; b.fillRect(0,0,W,wy); b.fillRect(0,wy+wh,W,H-wy-wh); b.fillRect(0,wy,wx,wh); b.fillRect(wx+ww,wy,W-wx-ww,wh);
     b.strokeStyle='rgba(200,190,170,0.5)'; b.lineWidth=6; b.strokeRect(wx,wy,ww,wh); b.lineWidth=3; b.beginPath(); b.moveTo(wx+ww/2,wy); b.lineTo(wx+ww/2,wy+wh); b.moveTo(wx,wy+wh/2); b.lineTo(wx+ww,wy+wh/2); b.stroke(); b.fillStyle='rgba(60,50,45,0.95)'; b.fillRect(wx-16,wy+wh,ww+32,12);
     const glow=b.createRadialGradient(W*0.5,wy+wh*0.5,0,W*0.5,wy+wh*0.5,ww); glow.addColorStop(0,rgba(L.top,0.25*light+0.05)); glow.addColorStop(1,'rgba(0,0,0,0)'); b.fillStyle=glow; b.fillRect(0,0,W,H); }
